@@ -7,10 +7,17 @@
     "build": "next build",
     "package:shared-hosting": "npm run build && node scripts/package-shared-hosting.mjs",
     "start": "next start --hostname 0.0.0.0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "admin:hash-password": "tsx scripts/hash-password.ts"
   },
   "dependencies": {
+    "@tiptap/extension-image": "3.32.0",
+    "@tiptap/markdown": "3.32.0",
+    "@tiptap/pm": "3.32.0",
+    "@tiptap/react": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0",
     "lucide-react": "0.575.0",
+    "marked": "18.1.2",
     "next": "16.3.6",
     "react": "19.2.6",
     "react-dom": "19.2.6"
@@ -19,6 +26,7 @@
     "@types/node": "20.19.43",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.3",
+    "tsx": "4.23.15",
     "typescript": "5.9.3"
   },
   "overrides": {
