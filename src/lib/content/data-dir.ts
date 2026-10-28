@@ -2,14 +2,23 @@ import { access, mkdir } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
 
+/*
+ * The turbopackIgnore comments stop Next.js file tracing from treating these
+ * runtime paths as build inputs; without them the whole project (src, docs,
+ * dist, local data) is copied into the standalone deploy package.
+ */
+
 /** Folder for admin content. Must live outside the deployed app folder in production. */
 export function getDataDir(): string {
   const configured = process.env.DATA_DIR?.trim();
-  return path.resolve(configured || path.join(process.cwd(), "data"));
+  return path.resolve(
+    /*turbopackIgnore: true*/ configured ||
+      path.join(/*turbopackIgnore: true*/ process.cwd(), "data"),
+  );
 }
 
 export function dataPath(...segments: string[]): string {
-  return path.join(getDataDir(), ...segments);
+  return path.join(/*turbopackIgnore: true*/ getDataDir(), ...segments);
 }
 
 export type DataDirStatus = {

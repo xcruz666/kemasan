@@ -15,7 +15,7 @@ import { isProduct } from "./validation";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const productsDirectory = () => dataPath("products");
-const productFile = (id: string) => path.join(productsDirectory(), `${id}.json`);
+const productFile = (id: string) => path.join(/*turbopackIgnore: true*/ productsDirectory(), `${id}.json`);
 
 const byOrder = (a: Product, b: Product) =>
   a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "id");

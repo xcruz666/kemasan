@@ -36,6 +36,11 @@ function uploadsDirectory() {
   return dataPath("uploads");
 }
 
+/** Runtime path; turbopackIgnore keeps Next.js file tracing out of it (see data-dir.ts). */
+function uploadPath(file: string) {
+  return path.join(/*turbopackIgnore: true*/ uploadsDirectory(), file);
+}
+
 export type SaveUploadResult = { ok: true; file: string } | { ok: false; error: string };
 
 export async function saveUpload(bytes: Uint8Array): Promise<SaveUploadResult> {
@@ -47,14 +52,14 @@ export async function saveUpload(bytes: Uint8Array): Promise<SaveUploadResult> {
 
   const file = `${randomUUID()}.${extension}`;
   await mkdir(uploadsDirectory(), { recursive: true });
-  await writeFile(path.join(uploadsDirectory(), file), bytes, { flag: "wx" });
+  await writeFile(uploadPath(file), bytes, { flag: "wx" });
   return { ok: true, file };
 }
 
 export async function readUpload(file: string): Promise<Buffer | null> {
   if (!UPLOAD_FILE_PATTERN.test(file)) return null;
   try {
-    return await readFile(path.join(uploadsDirectory(), file));
+    return await readFile(uploadPath(file));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;
@@ -64,6 +69,6 @@ export async function readUpload(file: string): Promise<Buffer | null> {
 export async function deleteUnusedUploads(candidates: string[], stillUsed: Set<string>) {
   for (const file of new Set(candidates)) {
     if (!UPLOAD_FILE_PATTERN.test(file) || stillUsed.has(file)) continue;
-    await rm(path.join(uploadsDirectory(), file), { force: true });
+    await rm(uploadPath(file), { force: true });
   }
 }

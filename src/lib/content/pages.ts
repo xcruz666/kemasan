@@ -14,7 +14,7 @@ import { isPage } from "./validation";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const pagesDirectory = () => dataPath("pages");
-const pageFile = (id: string) => path.join(pagesDirectory(), `${id}.json`);
+const pageFile = (id: string) => path.join(/*turbopackIgnore: true*/ pagesDirectory(), `${id}.json`);
 
 const byMenuOrder = (a: Page, b: Page) =>
   a.menuOrder - b.menuOrder || a.title.localeCompare(b.title, "id");

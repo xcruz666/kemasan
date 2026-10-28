@@ -56,13 +56,18 @@ export function renderMarkdown(source: string): string {
 /** Plain text for meta descriptions, cut at a word boundary. */
 export function markdownToPlainText(source: string, maxLength = 160): string {
   const text = renderMarkdown(source)
-    .replace(/<[^>]+>/g, " ")
+    // End headings with a period so they don't run into the next sentence.
+    .replace(/<\/h[2-4]>/g, ". ")
+    // Block ends become spaces; inline tags (a, strong, em) vanish without one.
+    .replace(/<\/(?:p|li|blockquote|td|th|tr)>|<br>|<hr>/g, " ")
+    .replace(/<[^>]+>/g, "")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
+    .replace(/\.\s*\./g, ".")
     .trim();
   if (text.length <= maxLength) return text;
   const cut = text.slice(0, maxLength - 1);

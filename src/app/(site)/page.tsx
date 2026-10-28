@@ -15,10 +15,12 @@ import {
   Utensils,
   Plus,
 } from "lucide-react";
-import { Header } from "@/components/header";
+import Link from "next/link";
+import { ProductCard } from "@/components/product-card";
 import { QuoteForm } from "@/components/quote-form";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { brand, whatsappUrl } from "@/lib/brand";
+import { getFeaturedProducts } from "@/lib/content/products";
 import { getSiteUrl } from "@/lib/site-url";
 import { StructuredData } from "@/app/structured-data";
 
@@ -73,22 +75,13 @@ const faqs = [
   ],
 ];
 
-export default function Home() {
+export default async function Home() {
   const siteUrl = getSiteUrl();
+  const featured = await getFeaturedProducts(6);
 
   return (
     <>
       {siteUrl && <StructuredData siteUrl={siteUrl} />}
-      <a className="skip-link" href="#main">
-        Langsung ke konten
-      </a>
-      <div className="announcement">
-        <span>KEMAS LEBIH BAIK. TUMBUH LEBIH JAUH.</span>
-        <a href="#konsultasi">
-          Terbuka untuk pemesanan grosir <ArrowUpRight size={14} />
-        </a>
-      </div>
-      <Header />
       <main id="main">
         <section className="hero container" aria-labelledby="hero-title">
           <div className="hero-copy">
@@ -306,6 +299,36 @@ export default function Home() {
           </div>
         </section>
 
+        {featured.length > 0 && (
+          <section
+            className="section container featured-section"
+            aria-labelledby="produk-unggulan-title"
+          >
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">PRODUK UNGGULAN</p>
+                <h2 id="produk-unggulan-title">
+                  Pilihan kemasan
+                  <br />
+                  untuk usaha Anda.
+                </h2>
+              </div>
+              <p>
+                Lihat detail ukuran, spesifikasi, dan harga, lalu tanyakan
+                ketersediaannya langsung ke tim kami.
+              </p>
+            </div>
+            <div className="product-card-grid">
+              {featured.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            <Link className="text-link featured-link" href="/katalog">
+              Lihat semua produk <ArrowUpRight size={18} />
+            </Link>
+          </section>
+        )}
+
         <section className="section container applications">
           <div className="section-heading">
             <div>
@@ -454,50 +477,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-main">
-            <a
-              className="brand"
-              href="#"
-              aria-label={`${brand.name}, kembali ke atas`}
-            >
-              <span className="brand-mark">
-                <Layers2 size={29} strokeWidth={1.7} />
-              </span>
-              <span>
-                optima<span className="brand-period">.</span>
-                <small>KEMASAN PRIMA</small>
-              </span>
-            </a>
-            <p>
-              Kemasan baik.
-              <br />
-              Kesegaran terjaga.
-            </p>
-            <nav aria-label="Navigasi footer">
-              <a href="#produk">Produk</a>
-              <a href="#cara-pesan">Cara pesan</a>
-              <a href="#konsultasi">Hubungi kami</a>
-            </nav>
-          </div>
-          <div className="footer-bottom">
-            <span>© {new Date().getFullYear()} {brand.name}.</span>
-            <span>Partner kemasan untuk usaha Anda.</span>
-            <a href="#">Kembali ke atas ↑</a>
-          </div>
-        </div>
-      </footer>
-      <a
-        className="floating-wa"
-        href={whatsappUrl()}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Konsultasi melalui WhatsApp"
-      >
-        <WhatsAppIcon size={25} />
-        <span>Chat kami</span>
-      </a>
     </>
   );
 }

@@ -5,14 +5,9 @@ import { Layers2, Menu, X } from "lucide-react";
 import { brand, whatsappUrl } from "@/lib/brand";
 import { WhatsAppIcon } from "./whatsapp-icon";
 
-const links = [
-  ["Produk", "#produk"],
-  ["Keunggulan", "#keunggulan"],
-  ["Cara pesan", "#cara-pesan"],
-  ["FAQ", "#faq"],
-];
+export type NavLink = { label: string; href: string };
 
-export function Header() {
+export function Header({ links }: { links: NavLink[] }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
@@ -24,7 +19,7 @@ export function Header() {
   return (
     <header className="site-header">
       <div className="container nav-wrap">
-        <a className="brand" href="#" aria-label={`${brand.name}, beranda`}>
+        <a className="brand" href="/" aria-label={`${brand.name}, beranda`}>
           <span className="brand-mark">
             <Layers2 size={29} strokeWidth={1.7} />
           </span>
@@ -34,7 +29,7 @@ export function Header() {
           </span>
         </a>
         <nav className="desktop-nav" aria-label="Navigasi utama">
-          {links.map(([label, href]) => (
+          {links.map(({ label, href }) => (
             <a key={href} href={href}>
               {label}
             </a>
@@ -65,7 +60,7 @@ export function Header() {
           className="mobile-menu"
           aria-label="Navigasi seluler"
         >
-          {links.map(([label, href]) => (
+          {links.map(({ label, href }) => (
             <a key={href} href={href} onClick={() => setOpen(false)}>
               {label}
             </a>

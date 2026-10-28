@@ -20,7 +20,8 @@ npm start
 
 ## Konten dan kontak
 
-- `src/app/page.tsx`: konten, spesifikasi, FAQ, dan bagian pemasaran.
+- `src/app/(site)/page.tsx`: konten beranda, spesifikasi, FAQ, dan bagian pemasaran.
+- `src/app/(site)/layout.tsx`: header, footer, dan tombol WhatsApp untuk semua halaman publik.
 - `src/app/globals.css`: token warna, tata letak, dan tampilan mobile.
 - `src/lib/brand.ts`: nomor kontak dan pembentuk tautan WhatsApp.
 - `src/components/quote-form.tsx`: pilihan produk, ukuran, dan jumlah yang dimasukkan ke pesan WhatsApp.
@@ -43,6 +44,17 @@ npm run build
 ```
 
 Struktur mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/getting-started/installation).
+
+## Admin, katalog, dan halaman
+
+- `/admin`: login satu password. Kelola produk, kategori, dan halaman. Editor punya mode visual dan Markdown.
+- `/katalog` dan `/katalog/<slug>`: katalog produk yang berstatus Terbit. Produk yang ditandai Unggulan juga tampil di beranda.
+- `/<slug>`: halaman tambahan, misalnya Tentang Kami. Bisa dimunculkan di menu header.
+- Data disimpan sebagai file JSON dan foto di folder `DATA_DIR` (lokal: `./data`, diabaikan git). Tidak ada database.
+- Untuk login lokal, isi `ADMIN_PASSWORD_HASH` (dari `npm run admin:hash-password`) dan `SESSION_SECRET` di `.env.local`.
+- Desain lengkap: `docs/superpowers/specs/2026-10-29-admin-katalog-halaman-design.md`. Panduan deploy: `README_SHARED_HOSTING.md`.
+
+Gunakan Node.js 24 (`nvm use`, lihat `.nvmrc`).
 
 ## SEO
 

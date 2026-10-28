@@ -48,7 +48,7 @@ export async function readJsonDirectory<T>(
   for (const name of names.filter((entry) => entry.endsWith(".json")).sort()) {
     try {
       const value: unknown = JSON.parse(
-        await readFile(path.join(directory, name), "utf8"),
+        await readFile(path.join(/*turbopackIgnore: true*/ directory, name), "utf8"),
       );
       if (isValid(value)) items.push(value);
       else brokenFiles.push(name);

@@ -12,6 +12,7 @@ export function formatRupiah(value: number): string {
 
 export function priceLabel(product: Pick<Product, "price" | "priceUnit">): string {
   if (product.price === null) return "Tanya harga";
-  const unit = product.priceUnit.trim();
+  // "per pack" and "pack" both read "Rp 12.500 / pack".
+  const unit = product.priceUnit.trim().replace(/^per\s+/i, "");
   return unit ? `${formatRupiah(product.price)} / ${unit}` : formatRupiah(product.price);
 }

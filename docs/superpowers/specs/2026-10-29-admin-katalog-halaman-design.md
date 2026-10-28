@@ -65,7 +65,7 @@ Browser ──► LiteSpeed ──► Next.js (server.js)
 | `description` | string (Markdown) | tidak | |
 | `specs` | `{ label, value }[]` | tidak | Contoh: Ketebalan, 75 mikron |
 | `price` | number \| null | tidak | Rupiah, bilangan bulat. `null` = tampil "Tanya harga" |
-| `priceUnit` | string | tidak | Contoh: "per pack" |
+| `priceUnit` | string | tidak | Contoh: "pack". Tampil sebagai "Rp 12.500 / pack". Awalan "per" diabaikan |
 | `images` | `{ file, alt, width, height }[]` | tidak | Urutan pertama = foto utama. `alt` wajib kalau foto ada. `width`/`height` disimpan supaya layout tidak bergeser (CLS) |
 | `featured` | boolean | ya | Tampil di section "Produk unggulan" halaman utama |
 | `status` | `"draft"` \| `"published"` | ya | Draf tidak tampil publik (404) |
@@ -181,7 +181,7 @@ Produk atau halaman berstatus draf, atau slug yang tidak ada, mengembalikan `not
 | robots.txt | Ditambah `Disallow: /admin` |
 | Halaman admin | `robots: noindex, nofollow` |
 | Struktur heading | Satu H1 per halaman. Isi Markdown dimulai dari H2 |
-| Gambar | `alt` wajib. `next/image` `unoptimized` dengan `width`/`height` asli dan `sizes`. Foto pertama di atas lipatan diberi `priority`, sisanya lazy |
+| Gambar | `alt` wajib. `next/image` `unoptimized` dengan `width`/`height` asli dan `sizes`. Foto pertama di atas lipatan diberi `preload` (`priority` sudah deprecated di Next.js 16), sisanya lazy |
 
 ### 4.5 Markdown ke HTML
 
@@ -211,13 +211,13 @@ Folder `products/`, `pages/`, dan `uploads/` dibuat otomatis saat penulisan pert
 
 ## 6. Pengujian
 
-- **Unit test** dengan test runner bawaan Node (`node --test`) plus `tsx` (devDependency) untuk menjalankan TypeScript di Node 20:
-  - Penyimpanan: tulis atomik, baca melewati file rusak, `DATA_DIR` tidak ada.
-  - Validasi slug: pola, duplikat, slug dicadangkan.
-  - Auth: hash dan verifikasi password, tanda tangan dan kedaluwarsa sesi, cookie dimodifikasi ditolak.
-  - Upload: deteksi magic bytes, tolak tipe atau ukuran salah, pola nama file.
+- **Tanpa unit test permanen** (keputusan pengguna 2026-10-29, demi kecepatan). Penggantinya: skrip uji sekali jalan saat implementasi, yang tidak disimpan di repo:
+  - Penyimpanan: simpan, slug duplikat ditolak, file JSON rusak dilewati.
+  - Kategori yang masih dipakai tidak bisa dihapus. Slug halaman yang dicadangkan ditolak.
+  - Auth: password salah ditolak; token sesi yang dimodifikasi, salah secret, atau kedaluwarsa ditolak.
+  - Upload: deteksi magic bytes.
   - Markdown: `<script>`, `<img onerror=...>`, link `javascript:`, dan gambar dari luar `/uploads/` terbuang. Heading, list, link, tabel, dan gambar `/uploads/` tetap ada.
-- **Wajib lulus:** `npm run typecheck`, `npm test`, `npm run build`.
+- **Wajib lulus:** `npm run typecheck`, `npm run build`.
 - **Uji manual di ZIP hasil packaging** (lokal, seperti pengujian sebelumnya): login, buat kategori, buat produk dengan 2 foto, terbitkan, cek `/katalog`, halaman produk, beranda, sitemap, buat halaman dengan `showInMenu`, hapus produk (foto ikut terhapus), restart server (data tetap ada).
 
 ## 7. Kompatibilitas shared hosting
@@ -250,35 +250,35 @@ SESSION_SECRET=<string acak minimal 32 karakter>
 
 - `.env.example` ditambah ketiga kunci ini, tanpa nilai asli.
 - `README_SHARED_HOSTING.md` dan `README.txt` di ZIP diperbarui: cara mengisi env, lokasi data, dan cara backup (salin folder `DATA_DIR`).
-- `scripts/package-shared-hosting.mjs` tidak perlu diubah. `data/` lokal tidak ikut masuk ZIP karena standalone tidak menyertakannya. Ini dicek ulang saat implementasi.
+- `README.txt` dibuat oleh `scripts/package-shared-hosting.mjs`, jadi skrip itu ikut diubah, tetapi **hanya baris teks README-nya**. Logika pembuatan ZIP tidak diubah. `data/` lokal tidak boleh ikut masuk ZIP. Ini dicek ulang saat implementasi.
 
 ## 9. Dampak
 
-**Dependensi baru** (versi dipasang persis, mengikuti gaya `package.json`): `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-image`, `@tiptap/markdown`, `marked`. Dev: `tsx`. Semuanya JavaScript murni, tanpa binary native.
+**Dependensi baru** (versi dipasang persis, mengikuti gaya `package.json`): `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-image`, `@tiptap/markdown`, `marked`. Dev: `tsx`, hanya untuk menjalankan `npm run admin:hash-password` di laptop. Semuanya JavaScript murni, tanpa binary native.
 
 **File baru (garis besar):**
 
-- `src/lib/content/` — `storage.ts`, `products.ts`, `pages.ts`, `categories.ts`, `validation.ts`, `markdown.ts`
-- `src/lib/auth/` — `password.ts`, `session.ts`, `rate-limit.ts`
-- `src/lib/uploads.ts`
+- `src/lib/content/` — `types.ts`, `data-dir.ts`, `storage.ts`, `slug.ts`, `image-ref.ts`, `validation.ts`, `references.ts`, `products.ts`, `pages.ts`, `categories.ts`, `cleanup.ts`
+- `src/lib/auth/` — `password.ts`, `session.ts`, `rate-limit.ts`, `config.ts`, `admin.ts`
+- `src/lib/uploads.ts`, `src/lib/markdown.ts`, `src/lib/format.ts`, `src/lib/seo.ts`
 - `src/proxy.ts`
-- `src/app/admin/**`
-- `src/app/katalog/**`, `src/app/[slug]/page.tsx`, `src/app/uploads/[file]/route.ts`
-- `src/components/footer.tsx`, `src/components/markdown-editor.tsx`, `src/components/product-card.tsx`
-- `scripts/hash-password.mjs`
-- `tests/**`
-- `.env.example`
+- `src/app/admin/**`, `src/components/admin/**`
+- `src/app/(site)/layout.tsx`, `src/app/(site)/katalog/**`, `src/app/(site)/[slug]/page.tsx`, `src/app/uploads/[file]/route.ts`
+- `src/components/footer.tsx`, `src/components/product-card.tsx`, `src/components/markdown-content.tsx`, `src/components/json-ld.tsx`
+- `scripts/hash-password.ts`
+- `.env.example`, `.nvmrc` (Node 24)
 
 **File yang diubah:**
 
-- `src/app/page.tsx`: section unggulan, footer diekstrak
+- `src/app/page.tsx` → dipindah ke `src/app/(site)/page.tsx` (URL `/` tetap): section unggulan; header, footer, dan tombol WhatsApp pindah ke layout grup `(site)`
 - `src/components/header.tsx`: tautan dan props menu
 - `src/app/sitemap.ts`, `src/app/robots.ts`
 - `next.config.ts`: `experimental.serverActions.bodySizeLimit`
-- `package.json`: dependensi dan script `test`, `admin:hash-password`
+- `package.json`: dependensi dan script `admin:hash-password`
 - `.gitignore`: `data/`
+- `scripts/package-shared-hosting.mjs`: hanya teks `README.txt`
 - `README_SHARED_HOSTING.md`, `README.md`
 
-**Tidak tersentuh:** form konsultasi, isi section lain di beranda, skrip packaging.
+**Tidak tersentuh:** form konsultasi, isi section lain di beranda, logika pembuatan ZIP.
 
 **Risiko:** SEDANG. Header dan beranda berubah. Mitigasinya: uji manual seluruh beranda di ZIP hasil packaging sebelum deploy.
