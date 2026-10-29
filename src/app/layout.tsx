@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { brand } from "@/lib/brand";
-import { getSiteUrl } from "@/lib/site-url";
+import { uploadUrl } from "@/lib/content/image-ref";
+import { getPublicOrigin, getSiteSettings } from "@/lib/content/settings";
 import "./globals.css";
 
 const sans = localFont({
@@ -15,17 +15,24 @@ const mono = localFont({
   display: "swap",
 });
 
-const title = "Kantong Vacuum Premium untuk Bisnis | Optima Kemasan Prima";
-const description =
-  "Jual kantong vacuum premium untuk kebutuhan usaha dan grosir. Material Nylon + LLDPE, ketebalan standar 75 mikron. Konsultasikan ukuran via WhatsApp.";
-
+/**
+ * Site-wide fallbacks. Every public page sets its own title, description,
+ * canonical URL, and link preview through @/lib/seo.
+ */
 export async function generateMetadata(): Promise<Metadata> {
-  const siteUrl = getSiteUrl();
+  const [{ site, seo }, origin] = await Promise.all([getSiteSettings(), getPublicOrigin()]);
+  const favicon = seo.favicon && {
+    url: uploadUrl(seo.favicon.file),
+    type: seo.favicon.file.endsWith(".png") ? "image/png" : "image/webp",
+  };
 
   return {
-    title,
-    description,
-    icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
+    ...(origin && { metadataBase: origin }),
+    title: site.siteName,
+    description: seo.defaultDescription,
+    icons: favicon
+      ? { icon: [favicon], apple: [favicon] }
+      : { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
     robots: {
       index: true,
       follow: true,
@@ -37,40 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-video-preview": -1,
       },
     },
-    openGraph: {
-      type: "website",
-      locale: "id_ID",
-      siteName: brand.name,
-      title,
-      description,
-    },
-    twitter: { card: "summary", title, description },
-    ...(siteUrl && {
-      metadataBase: siteUrl,
-      alternates: { canonical: "/" },
-      openGraph: {
-        type: "website",
-        locale: "id_ID",
-        url: siteUrl,
-        siteName: brand.name,
-        title,
-        description,
-        images: [
-          {
-            url: "/images/optima-social.jpg",
-            width: 1200,
-            height: 630,
-            alt: "Kantong vacuum premium berisi salmon dan sayuran",
-          },
-        ],
-      },
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: ["/images/optima-social.jpg"],
-      },
-    }),
+    openGraph: { type: "website", locale: "id_ID", siteName: site.siteName },
   };
 }
 

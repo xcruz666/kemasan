@@ -1,16 +1,27 @@
 import { deleteUnusedUploads } from "@/lib/uploads";
+import { readLanding } from "./landing";
+import { landingUploads } from "./landing-shared";
 import { listPages } from "./pages";
 import { listProducts } from "./products";
 import { pageUploads, productUploads } from "./references";
+import { readSettings } from "./settings";
+import { settingsUploads } from "./settings-shared";
 
-/** Delete candidate uploads that no product or page references any more. */
+/** Delete candidate uploads that nothing (products, pages, landing, settings) references any more. */
 export async function cleanupUploads(candidates: string[]) {
   if (candidates.length === 0) return;
   try {
-    const [products, pages] = await Promise.all([listProducts(), listPages()]);
+    const [products, pages, landing, settings] = await Promise.all([
+      listProducts(),
+      listPages(),
+      readLanding(),
+      readSettings(),
+    ]);
     const used = new Set([
       ...products.items.flatMap(productUploads),
       ...pages.items.flatMap(pageUploads),
+      ...landingUploads(landing),
+      ...settingsUploads(settings.seo),
     ]);
     await deleteUnusedUploads(candidates, used);
   } catch (error) {

@@ -1,15 +1,22 @@
 import { cache } from "react";
 import { dataPath } from "./data-dir";
 import { listPages } from "./pages";
+import { getSiteUrl } from "@/lib/site-url";
 import { readJson, writeJsonAtomic } from "./storage";
 import {
   DEFAULT_MENU_LINKS,
+  DEFAULT_SEO,
+  DEFAULT_SITE,
   DEFAULT_WHATSAPP,
   type MenuItem,
+  type SeoSettings,
+  type SiteIdentity,
   type SiteSettings,
   type WhatsappSettings,
   defaultMenuItems,
   formatWhatsappDisplay,
+  normalizeSeoSettings,
+  normalizeSiteIdentity,
   parseMenuItem,
   validateWhatsappInput,
 } from "./settings-shared";
@@ -68,6 +75,8 @@ export async function readSettings(): Promise<SiteSettings> {
   return {
     whatsapp: whatsapp.ok ? whatsapp.value : DEFAULT_WHATSAPP,
     headerMenu: normalizeMenu(source.headerMenu) ?? (await initialMenu()),
+    site: normalizeSiteIdentity(source.site),
+    seo: normalizeSeoSettings(source.seo),
   };
 }
 
@@ -77,7 +86,12 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
     return await readSettings();
   } catch (error) {
     console.error("[content] Gagal membaca pengaturan:", error);
-    return { whatsapp: DEFAULT_WHATSAPP, headerMenu: defaultMenuItems() };
+    return {
+      whatsapp: DEFAULT_WHATSAPP,
+      headerMenu: defaultMenuItems(),
+      site: DEFAULT_SITE,
+      seo: DEFAULT_SEO,
+    };
   }
 });
 
@@ -89,6 +103,26 @@ export async function saveWhatsappSettings(whatsapp: WhatsappSettings) {
 export async function saveHeaderMenu(headerMenu: MenuItem[]) {
   const current = await readSettings();
   await writeJsonAtomic(settingsFile(), { ...current, headerMenu });
+}
+
+export async function saveSiteIdentity(site: SiteIdentity) {
+  const current = await readSettings();
+  await writeJsonAtomic(settingsFile(), { ...current, site });
+}
+
+export async function saveSeoSettings(seo: SeoSettings) {
+  const current = await readSettings();
+  await writeJsonAtomic(settingsFile(), { ...current, seo });
+}
+
+/**
+ * Origin for canonical URLs, the sitemap, and link previews: the admin's
+ * canonical domain when set, otherwise SITE_URL. Undefined when neither is set.
+ */
+export async function getPublicOrigin(): Promise<URL | undefined> {
+  const { seo } = await getSiteSettings();
+  if (seo.canonicalOrigin) return new URL(new URL(seo.canonicalOrigin).origin);
+  return getSiteUrl();
 }
 
 export type ResolvedMenuLink = { label: string; href: string; external: boolean };

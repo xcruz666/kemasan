@@ -28,6 +28,8 @@ export type Product = {
   sortOrder: number;
   seoTitle: string;
   seoDescription: string;
+  /** Absolute URL; empty or missing means the page's own URL. */
+  canonicalUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -44,6 +46,8 @@ export type Page = {
   status: Status;
   seoTitle: string;
   seoDescription: string;
+  /** Absolute URL; empty or missing means the page's own URL. */
+  canonicalUrl?: string;
   createdAt: string;
   updatedAt: string;
 };

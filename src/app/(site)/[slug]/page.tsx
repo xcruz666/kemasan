@@ -7,8 +7,8 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { uploadUrl } from "@/lib/content/image-ref";
 import { getPublishedPageBySlug } from "@/lib/content/pages";
 import { markdownToPlainText } from "@/lib/markdown";
-import { pageMetadata } from "@/lib/seo";
-import { getSiteUrl } from "@/lib/site-url";
+import { getPublicOrigin } from "@/lib/content/settings";
+import { imageRefToSeo, pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -31,14 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: page.seoTitle || page.title,
     description: pageDescription(page),
     path: `/${page.slug}`,
-    image: cover
-      ? {
-          url: uploadUrl(cover.file),
-          width: cover.width,
-          height: cover.height,
-          alt: cover.alt || page.title,
-        }
-      : undefined,
+    image: cover ? imageRefToSeo(cover, page.title) : undefined,
+    canonical: page.canonicalUrl,
   });
 }
 
@@ -47,7 +41,7 @@ export default async function ContentPage({ params }: Props) {
   const page = await loadPage(slug);
   if (!page) notFound();
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getPublicOrigin();
   const cover = page.coverImage;
 
   return (

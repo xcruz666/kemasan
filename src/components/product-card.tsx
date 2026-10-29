@@ -11,7 +11,10 @@ type ProductCardProps = {
   headingLevel?: "h2" | "h3";
 };
 
-export function ProductCard({ product, headingLevel = "h3" }: ProductCardProps) {
+export function ProductCard({
+  product,
+  headingLevel = "h3",
+}: ProductCardProps) {
   const image = product.images[0];
   const Heading = headingLevel;
 

@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
 import { getPublishedPages } from "@/lib/content/pages";
 import { getPublishedProducts } from "@/lib/content/products";
-import { getSiteUrl } from "@/lib/site-url";
+import { getPublicOrigin } from "@/lib/content/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getPublicOrigin();
 
   if (!siteUrl) return [];
 

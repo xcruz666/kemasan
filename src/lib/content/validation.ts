@@ -1,4 +1,5 @@
 import { isImageRef } from "./image-ref";
+import { canonicalUrlError, URL_MAX } from "./settings-shared";
 import { RESERVED_PAGE_SLUGS, SLUG_MAX_LENGTH, SLUG_PATTERN } from "./slug";
 import type {
   Category,
@@ -74,6 +75,13 @@ function readImage(raw: unknown, key: string, errors: FieldErrors): ImageRef | n
   return { file: raw.file, alt, width: raw.width, height: raw.height };
 }
 
+function readCanonical(source: Source, errors: FieldErrors): string {
+  const value = readText(source, "canonicalUrl", errors, { label: "Canonical URL", max: URL_MAX });
+  const error = canonicalUrlError(value);
+  if (error && !errors.canonicalUrl) errors.canonicalUrl = error;
+  return value;
+}
+
 function result<T>(value: T, errors: FieldErrors): Result<T> {
   return Object.keys(errors).length > 0 ? { ok: false, errors } : { ok: true, value };
 }
@@ -146,6 +154,7 @@ export function validateProductInput(raw: unknown): Result<ProductInput> {
       sortOrder: readInteger(source, "sortOrder", errors, "Urutan"),
       seoTitle,
       seoDescription,
+      canonicalUrl: readCanonical(source, errors),
     },
     errors,
   );
@@ -179,6 +188,7 @@ export function validatePageInput(raw: unknown): Result<PageInput> {
       status: readStatus(source, errors),
       seoTitle,
       seoDescription,
+      canonicalUrl: readCanonical(source, errors),
     },
     errors,
   );
@@ -211,6 +221,7 @@ export function isProduct(value: unknown): value is Product {
       "seoTitle", "seoDescription", "createdAt", "updatedAt",
     ]) &&
     (product.categoryId === null || typeof product.categoryId === "string") &&
+    (product.canonicalUrl === undefined || typeof product.canonicalUrl === "string") &&
     (product.price === null || typeof product.price === "number") &&
     Array.isArray(product.specs) &&
     Array.isArray(product.images) &&
@@ -229,6 +240,7 @@ export function isPage(value: unknown): value is Page {
       "id", "slug", "title", "body", "seoTitle", "seoDescription", "createdAt", "updatedAt",
     ]) &&
     (page.coverImage === null || isImageRef(page.coverImage)) &&
+    (page.canonicalUrl === undefined || typeof page.canonicalUrl === "string") &&
     typeof page.showInMenu === "boolean" &&
     typeof page.menuOrder === "number" &&
     isStatus(page.status)

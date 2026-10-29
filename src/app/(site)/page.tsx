@@ -21,11 +21,25 @@ import { QuoteForm } from "@/components/quote-form";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { brand, whatsappUrl } from "@/lib/brand";
 import { getFeaturedProducts } from "@/lib/content/products";
-import { getSiteSettings, toWhatsappContact } from "@/lib/content/settings";
-import { getSiteUrl } from "@/lib/site-url";
+import { getLanding } from "@/lib/content/landing";
+import {
+  DEFAULT_HERO_IMAGE,
+  DEFAULT_PRODUCT_IMAGE,
+} from "@/lib/content/landing-shared";
+import { uploadUrl } from "@/lib/content/image-ref";
+import {
+  getPublicOrigin,
+  getSiteSettings,
+  toWhatsappContact,
+} from "@/lib/content/settings";
+import { builtInPageMetadata, fullTitle } from "@/lib/seo";
 import { StructuredData } from "@/app/structured-data";
 
 export const dynamic = "force-dynamic";
+
+export function generateMetadata() {
+  return builtInPageMetadata("home", "/");
+}
 
 const applications = [
   {
@@ -77,15 +91,34 @@ const faqs = [
 ];
 
 export default async function Home() {
-  const siteUrl = getSiteUrl();
-  const [featured, settings] = await Promise.all([getFeaturedProducts(6), getSiteSettings()]);
+  const [featured, settings, landing, siteUrl] = await Promise.all([
+    getFeaturedProducts(6),
+    getSiteSettings(),
+    getLanding(),
+    getPublicOrigin(),
+  ]);
+  const homeSeo = settings.seo.pages.home;
+  const pageTitle = await fullTitle(homeSeo.title);
+  const heroSrc = landing.hero.image
+    ? uploadUrl(landing.hero.image.file)
+    : DEFAULT_HERO_IMAGE;
+  const productSrc = landing.product.image
+    ? uploadUrl(landing.product.image.file)
+    : DEFAULT_PRODUCT_IMAGE;
   const whatsapp = toWhatsappContact(settings.whatsapp);
   const defaultWhatsappHref = whatsappUrl(whatsapp.phone, whatsapp.defaultMessage);
 
   return (
     <>
       {siteUrl && (
-        <StructuredData siteUrl={siteUrl} telephone={whatsapp.international} />
+        <StructuredData
+          siteUrl={siteUrl}
+          telephone={whatsapp.international}
+          siteName={settings.site.siteName}
+          pageTitle={pageTitle}
+          description={homeSeo.description}
+          images={[heroSrc, productSrc]}
+        />
       )}
       <main id="main">
         <section className="hero container" aria-labelledby="hero-title">

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -7,10 +6,11 @@ import { ChevronRight, Package } from "lucide-react";
 import { JsonLd } from "@/components/json-ld";
 import { MarkdownContent } from "@/components/markdown-content";
 import { ProductCard } from "@/components/product-card";
+import { ProductGallery } from "@/components/product-gallery";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
-import { brand, whatsappUrl } from "@/lib/brand";
+import { whatsappUrl } from "@/lib/brand";
 import { getCategoriesSafe } from "@/lib/content/categories";
-import { getSiteSettings } from "@/lib/content/settings";
+import { getPublicOrigin, getSiteSettings } from "@/lib/content/settings";
 import { uploadUrl } from "@/lib/content/image-ref";
 import type { Product } from "@/lib/content/types";
 import {
@@ -19,8 +19,7 @@ import {
 } from "@/lib/content/products";
 import { priceLabel } from "@/lib/format";
 import { markdownToPlainText } from "@/lib/markdown";
-import { pageMetadata } from "@/lib/seo";
-import { getSiteUrl } from "@/lib/site-url";
+import { imageRefToSeo, pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +41,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       product.summary ||
       markdownToPlainText(product.description, 160),
     path: `/katalog/${product.slug}`,
-    image: image && {
-      url: uploadUrl(image.file),
-      width: image.width,
-      height: image.height,
-      alt: image.alt || product.name,
-    },
+    image: image && imageRefToSeo(image, product.name),
+    canonical: product.canonicalUrl,
   });
 }
 
@@ -56,10 +51,11 @@ export default async function ProductPage({ params }: Props) {
   const product = await loadProduct(slug);
   if (!product) notFound();
 
-  const [products, categories, { whatsapp }] = await Promise.all([
+  const [products, categories, { whatsapp, site }, siteUrl] = await Promise.all([
     getPublishedProducts(),
     getCategoriesSafe(),
     getSiteSettings(),
+    getPublicOrigin(),
   ]);
   const category = categories.find((item) => item.id === product.categoryId);
   const related = product.categoryId
@@ -70,13 +66,11 @@ export default async function ProductPage({ params }: Props) {
         )
         .slice(0, 3)
     : [];
-  const [mainImage, ...otherImages] = product.images;
-  const siteUrl = getSiteUrl();
 
   return (
     <main id="main">
       {siteUrl && (
-        <JsonLd data={productJsonLd(siteUrl, product, category?.name)} />
+        <JsonLd data={productJsonLd(siteUrl, product, category?.name, site.siteName)} />
       )}
       <div className="container product-page">
         <nav className="breadcrumb" aria-label="Breadcrumb">
@@ -96,40 +90,22 @@ export default async function ProductPage({ params }: Props) {
         </nav>
 
         <div className="product-layout">
-          <div className="product-gallery">
-            {mainImage ? (
-              <Image
-                className="product-gallery-main"
-                src={uploadUrl(mainImage.file)}
-                alt={mainImage.alt || product.name}
-                width={mainImage.width}
-                height={mainImage.height}
-                sizes="(max-width: 900px) 100vw, 50vw"
-                preload
-                unoptimized
-              />
-            ) : (
+          {product.images.length > 0 ? (
+            <ProductGallery
+              images={product.images.map((image) => ({
+                src: uploadUrl(image.file),
+                alt: image.alt || product.name,
+                width: image.width,
+                height: image.height,
+              }))}
+            />
+          ) : (
+            <div className="product-gallery">
               <div className="product-gallery-placeholder" aria-hidden="true">
                 <Package size={56} strokeWidth={1.1} />
               </div>
-            )}
-            {otherImages.length > 0 && (
-              <ul className="product-gallery-thumbs">
-                {otherImages.map((image) => (
-                  <li key={image.file}>
-                    <Image
-                      src={uploadUrl(image.file)}
-                      alt={image.alt || product.name}
-                      width={image.width}
-                      height={image.height}
-                      sizes="(max-width: 900px) 33vw, 16vw"
-                      unoptimized
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="product-info">
             {category && (
@@ -156,7 +132,7 @@ export default async function ProductPage({ params }: Props) {
               className="button product-cta"
               href={whatsappUrl(
                 whatsapp.phone,
-                `Halo ${brand.name}, saya tertarik dengan produk ${product.name}. Mohon informasi harga, minimum pemesanan, dan ketersediaannya.`,
+                `Halo ${site.siteName}, saya tertarik dengan produk ${product.name}. Mohon informasi harga, minimum pemesanan, dan ketersediaannya.`,
               )}
               target="_blank"
               rel="noopener noreferrer"
@@ -199,6 +175,7 @@ function productJsonLd(
   siteUrl: URL,
   product: Product,
   categoryName: string | undefined,
+  siteName: string,
 ) {
   const url = new URL(`/katalog/${product.slug}`, siteUrl).toString();
   const images = product.images.map((image) =>
@@ -216,7 +193,7 @@ function productJsonLd(
           product.summary || markdownToPlainText(product.description, 300),
         url,
         ...(images.length > 0 && { image: images }),
-        brand: { "@type": "Brand", name: brand.name },
+        brand: { "@type": "Brand", name: siteName },
         ...(categoryName && { category: categoryName }),
         // Only real data: no invented availability, ratings, or reviews.
         ...(product.price !== null && {

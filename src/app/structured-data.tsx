@@ -1,12 +1,21 @@
-import { brand } from "@/lib/brand";
-
+/** Home page structured data; every value comes from Situs & SEO and Halaman Utama. */
 export function StructuredData({
   siteUrl,
   telephone,
+  siteName,
+  pageTitle,
+  description,
+  images,
 }: {
   siteUrl: URL;
   /** +62… from admin settings. */
   telephone: string;
+  siteName: string;
+  /** Full home page title, as in the <title> tag. */
+  pageTitle: string;
+  description: string;
+  /** Root-relative or absolute URLs of the landing photos. */
+  images: string[];
 }) {
   const site = siteUrl.toString();
   const graph = {
@@ -15,7 +24,7 @@ export function StructuredData({
       {
         "@type": "Organization",
         "@id": `${site}#organization`,
-        name: brand.name,
+        name: siteName,
         url: site,
         logo: `${site}images/optima-logo.svg`,
         telephone,
@@ -31,7 +40,7 @@ export function StructuredData({
         "@type": "WebSite",
         "@id": `${site}#website`,
         url: site,
-        name: brand.name,
+        name: siteName,
         inLanguage: "id-ID",
         publisher: { "@id": `${site}#organization` },
       },
@@ -39,25 +48,14 @@ export function StructuredData({
         "@type": "WebPage",
         "@id": `${site}#webpage`,
         url: site,
-        name: "Kantong Vacuum Premium untuk Bisnis | Optima Kemasan Prima",
+        name: pageTitle,
+        description,
         inLanguage: "id-ID",
         isPartOf: { "@id": `${site}#website` },
-        mainEntity: {
-          "@type": "Product",
-          name: "Kantong Vacuum Premium",
-          description:
-            "Kantong vacuum transparan berbahan Nylon + LLDPE, ketebalan standar 75 mikron. Ukuran dan ketebalan lain dapat dikonsultasikan.",
-          image: [
-            `${site}images/vacuum-food.webp`,
-            `${site}images/vacuum-pouches.webp`,
-          ],
-          category: "Kantong plastik vacuum untuk kemasan makanan",
-          material: "Nylon + LLDPE",
-          brand: {
-            "@type": "Brand",
-            name: brand.name,
-          },
-        },
+        ...(images.length > 0 && {
+          primaryImageOfPage: new URL(images[0], siteUrl).toString(),
+          image: images.map((image) => new URL(image, siteUrl).toString()),
+        }),
       },
     ],
   };

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { brand } from "@/lib/brand";
-import { getSiteUrl } from "@/lib/site-url";
+import { uploadUrl } from "@/lib/content/image-ref";
+import { getPublicOrigin, getSiteSettings } from "@/lib/content/settings";
+import { DEFAULT_OG_IMAGE, type PageSeo } from "@/lib/content/settings-shared";
+import type { ImageRef } from "@/lib/content/types";
 
 export type SeoImage = {
   /** Root-relative path, such as /uploads/<file> or /images/<file>. */
@@ -10,63 +12,87 @@ export type SeoImage = {
   alt: string;
 };
 
-export const defaultSocialImage: SeoImage = {
-  url: "/images/optima-social.jpg",
-  width: 1200,
-  height: 630,
-  alt: "Kantong vacuum premium berisi salmon dan sayuran",
-};
+export function imageRefToSeo(image: ImageRef, fallbackAlt: string): SeoImage {
+  return {
+    url: uploadUrl(image.file),
+    width: image.width,
+    height: image.height,
+    alt: image.alt || fallbackAlt,
+  };
+}
 
 type PageMetadataInput = {
   title: string;
+  /** Empty uses the default description from Situs & SEO. */
   description: string;
   /** Root-relative path of the page, such as /katalog. */
   path: string;
+  /** Link preview image; undefined uses the default preview image. */
   image?: SeoImage;
+  /** Link preview title and description when they should differ from the page's. */
+  ogTitle?: string;
+  ogDescription?: string;
+  /** Absolute canonical URL from the admin; empty uses origin + path. */
+  canonical?: string;
 };
 
+/** Page title as shown in the browser tab and search results. */
+export async function fullTitle(title: string): Promise<string> {
+  const { site, seo } = await getSiteSettings();
+  return seo.appendSiteName && title !== site.siteName ? `${title} | ${site.siteName}` : title;
+}
+
+export async function defaultSocialImage(): Promise<SeoImage> {
+  const { seo } = await getSiteSettings();
+  return seo.defaultOgImage
+    ? imageRefToSeo(seo.defaultOgImage, seo.defaultOgImageAlt)
+    : { ...DEFAULT_OG_IMAGE, alt: seo.defaultOgImageAlt || DEFAULT_OG_IMAGE.alt };
+}
+
 /**
- * Mirrors the root layout: canonical URL and social images are only emitted
- * when SITE_URL is set, because absolute URLs need a known origin.
+ * Canonical URL and absolute image URLs are only emitted when an origin is
+ * known (canonical domain in Situs & SEO, or SITE_URL).
  */
-export function pageMetadata({
+export async function pageMetadata({
   title,
   description,
   path,
   image,
-}: PageMetadataInput): Metadata {
-  const siteUrl = getSiteUrl();
-  const fullTitle = `${title} | ${brand.name}`;
+  ogTitle,
+  ogDescription,
+  canonical,
+}: PageMetadataInput): Promise<Metadata> {
+  const [{ site, seo }, origin] = await Promise.all([getSiteSettings(), getPublicOrigin()]);
+  const pageTitle = await fullTitle(title);
+  const pageDescription = description || seo.defaultDescription;
+  const shareTitle = ogTitle || pageTitle;
+  const shareDescription = ogDescription || pageDescription;
 
   const metadata: Metadata = {
-    title: fullTitle,
-    description,
+    title: { absolute: pageTitle },
+    description: pageDescription,
     openGraph: {
       type: "website",
       locale: "id_ID",
-      siteName: brand.name,
-      title: fullTitle,
-      description,
+      siteName: site.siteName,
+      title: shareTitle,
+      description: shareDescription,
     },
-    twitter: { card: "summary", title: fullTitle, description },
+    twitter: { card: "summary", title: shareTitle, description: shareDescription },
   };
 
-  if (!siteUrl) return metadata;
+  if (!origin) return metadata;
 
-  const url = new URL(path, siteUrl).toString();
-  const socialImage = image ?? defaultSocialImage;
-  const imageUrl = new URL(socialImage.url, siteUrl).toString();
+  const url = canonical || new URL(path, origin).toString();
+  const socialImage = image ?? (await defaultSocialImage());
+  const imageUrl = new URL(socialImage.url, origin).toString();
 
   return {
     ...metadata,
     alternates: { canonical: url },
     openGraph: {
-      type: "website",
-      locale: "id_ID",
+      ...metadata.openGraph,
       url,
-      siteName: brand.name,
-      title: fullTitle,
-      description,
       images: [
         {
           url: imageUrl,
@@ -78,9 +104,27 @@ export function pageMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: fullTitle,
-      description,
+      title: shareTitle,
+      description: shareDescription,
       images: [imageUrl],
     },
   };
+}
+
+/** Beranda and Katalog: everything comes from Situs & SEO. */
+export async function builtInPageMetadata(
+  key: "home" | "katalog",
+  path: string,
+): Promise<Metadata> {
+  const { seo } = await getSiteSettings();
+  const page: PageSeo = seo.pages[key];
+  return pageMetadata({
+    title: page.title,
+    description: page.description,
+    path,
+    image: page.ogImage ? imageRefToSeo(page.ogImage, page.title) : undefined,
+    ogTitle: page.ogTitle,
+    ogDescription: page.ogDescription,
+    canonical: page.canonical,
+  });
 }

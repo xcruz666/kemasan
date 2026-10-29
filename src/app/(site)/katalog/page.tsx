@@ -3,18 +3,13 @@ import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
 import { getCategoriesSafe } from "@/lib/content/categories";
 import { getPublishedProducts } from "@/lib/content/products";
-import { pageMetadata } from "@/lib/seo";
+import { builtInPageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  return pageMetadata({
-    title: "Katalog Kantong Vacuum",
-    description:
-      "Katalog kantong vacuum Optima Kemasan Prima untuk usaha dan grosir. Lihat ukuran, spesifikasi, dan harga, lalu konsultasikan kebutuhan Anda via WhatsApp.",
-    // Filtered views share one canonical URL, so ?kategori= is never indexed separately.
-    path: "/katalog",
-  });
+// Filtered views (?kategori=) share the katalog canonical URL, so they are never indexed separately.
+export function generateMetadata(): Promise<Metadata> {
+  return builtInPageMetadata("katalog", "/katalog");
 }
 
 export default async function CatalogPage({
@@ -44,7 +39,7 @@ export default async function CatalogPage({
       <section className="section container catalog-page">
         <header className="page-intro">
           <p className="eyebrow">KATALOG PRODUK</p>
-          <h1 className="page-title">Katalog kantong vacuum</h1>
+          <h1 className="page-title">Katalog Produk Kami</h1>
           <p className="page-lead">
             Pilih kemasan yang sesuai dengan produk Anda. Untuk ukuran atau
             ketebalan khusus, hubungi kami melalui WhatsApp.
