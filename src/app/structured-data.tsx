@@ -6,6 +6,7 @@ export function StructuredData({
   pageTitle,
   description,
   images,
+  logoUrl,
 }: {
   siteUrl: URL;
   /** +62… from admin settings. */
@@ -16,6 +17,8 @@ export function StructuredData({
   description: string;
   /** Root-relative or absolute URLs of the landing photos. */
   images: string[];
+  /** Root-relative URL of the uploaded logo; undefined uses the built-in logo. */
+  logoUrl?: string;
 }) {
   const site = siteUrl.toString();
   const graph = {
@@ -26,7 +29,7 @@ export function StructuredData({
         "@id": `${site}#organization`,
         name: siteName,
         url: site,
-        logo: `${site}images/optima-logo.svg`,
+        logo: new URL(logoUrl ?? "/images/optima-logo.svg", siteUrl).toString(),
         telephone,
         contactPoint: {
           "@type": "ContactPoint",

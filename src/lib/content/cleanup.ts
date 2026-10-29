@@ -5,9 +5,9 @@ import { listPages } from "./pages";
 import { listProducts } from "./products";
 import { pageUploads, productUploads } from "./references";
 import { readSettings } from "./settings";
-import { settingsUploads } from "./settings-shared";
+import { settingsUploads, siteIdentityUploads } from "./settings-shared";
 
-/** Delete candidate uploads that nothing (products, pages, landing, settings) references any more. */
+/** Delete candidate uploads that nothing (products, pages, landing, settings, logo) references any more. */
 export async function cleanupUploads(candidates: string[]) {
   if (candidates.length === 0) return;
   try {
@@ -22,6 +22,7 @@ export async function cleanupUploads(candidates: string[]) {
       ...pages.items.flatMap(pageUploads),
       ...landingUploads(landing),
       ...settingsUploads(settings.seo),
+      ...siteIdentityUploads(settings.site),
     ]);
     await deleteUnusedUploads(candidates, used);
   } catch (error) {

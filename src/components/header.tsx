@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Layers2, Menu, X } from "lucide-react";
-import { DEFAULT_SITE } from "@/lib/content/settings-shared";
+import { Menu, X } from "lucide-react";
+import { DEFAULT_SITE, type SiteLogo as SiteLogoSettings } from "@/lib/content/settings-shared";
+import { SiteLogo } from "./site-logo";
 import { WhatsAppIcon } from "./whatsapp-icon";
 
 /** external links (https://…) open in a new tab. */
@@ -17,13 +18,15 @@ export function Header({
   whatsappHref,
   siteName = DEFAULT_SITE.siteName,
   ctaLabel = DEFAULT_SITE.headerCtaLabel,
+  logo = DEFAULT_SITE.logo,
 }: {
   links: NavLink[];
   /** wa.me link with the default message from admin settings. */
   whatsappHref: string;
-  /** Used in aria-labels only; the logo itself is fixed design. */
+  /** Used in aria-labels and the image logo's alt text. */
   siteName?: string;
   ctaLabel?: string;
+  logo?: SiteLogoSettings;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -36,15 +39,7 @@ export function Header({
   return (
     <header className="site-header">
       <div className="container nav-wrap">
-        <a className="brand" href="/" aria-label={`${siteName}, beranda`}>
-          <span className="brand-mark">
-            <Layers2 size={29} strokeWidth={1.7} />
-          </span>
-          <span>
-            optima<span className="brand-period">.</span>
-            <small>KEMASAN PRIMA</small>
-          </span>
-        </a>
+        <SiteLogo logo={logo} siteName={siteName} />
         <nav className="desktop-nav" aria-label="Navigasi utama">
           {links.map((link, index) => (
             <a key={`${index}-${link.href}`} href={link.href} {...linkTarget(link)}>

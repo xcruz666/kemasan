@@ -6,6 +6,7 @@ import { cleanupUploads } from "@/lib/content/cleanup";
 import { readSettings, saveSeoSettings, saveSiteIdentity } from "@/lib/content/settings";
 import {
   settingsUploads,
+  siteIdentityUploads,
   validateSeoSettings,
   validateSiteIdentity,
 } from "@/lib/content/settings-shared";
@@ -31,13 +32,18 @@ export async function saveSiteIdentityAction(
   const validated = validateSiteIdentity(raw);
   if (!validated.ok) return fieldFailure(validated.errors);
 
+  let replaced: string[] = [];
   try {
+    const previous = await readSettings();
     await saveSiteIdentity(validated.value);
+    const kept = new Set(siteIdentityUploads(validated.value));
+    replaced = siteIdentityUploads(previous.site).filter((file) => !kept.has(file));
   } catch (error) {
     console.error("[admin] Gagal menyimpan pengaturan situs:", error);
     return failure(SAVE_ERROR);
   }
 
+  await cleanupUploads(replaced);
   // Announcement bar, header, footer, and the site name appear on every public page.
   revalidatePath("/", "layout");
   return success("Pengaturan situs berhasil disimpan.");

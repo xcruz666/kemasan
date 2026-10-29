@@ -1,5 +1,6 @@
 /** Client-safe settings types, defaults, and validation. */
 import { isImageRef } from "./image-ref";
+import { ICON_OPTIONS, type IconKey } from "./landing-shared";
 import type { FieldErrors, ImageRef, Result } from "./types";
 
 export type DefaultMenuKey = "produk" | "katalog" | "keunggulan" | "cara-pesan" | "faq";
@@ -27,10 +28,27 @@ export type WhatsappSettings = {
   defaultMessage: string;
 };
 
+/**
+ * Header and footer logo. "text" keeps the designed wordmark with editable
+ * words and icon; "image" shows an uploaded logo instead.
+ */
+export type SiteLogo = {
+  mode: "text" | "image";
+  icon: IconKey;
+  /** Big word, e.g. "optima". */
+  word: string;
+  /** Coloured character after the word, e.g. ".". */
+  accent: string;
+  /** Small spaced text under the word, e.g. "KEMASAN PRIMA". */
+  subtitle: string;
+  image: ImageRef | null;
+};
+
 /** Site-wide text around every public page. Footer navigation stays fixed. */
 export type SiteIdentity = {
   /** og:site_name, the title suffix, structured data, and the footer copyright. */
   siteName: string;
+  logo: SiteLogo;
   announcement: { visible: boolean; text: string; linkLabel: string; linkHref: string };
   footer: { tagline: string; bottomText: string };
   headerCtaLabel: string;
@@ -71,6 +89,14 @@ export type SiteSettings = {
 
 export const DEFAULT_SITE: SiteIdentity = {
   siteName: "Optima Kemasan Prima",
+  logo: {
+    mode: "text",
+    icon: "layers",
+    word: "optima",
+    accent: ".",
+    subtitle: "KEMASAN PRIMA",
+    image: null,
+  },
   announcement: {
     visible: true,
     text: "KEMAS LEBIH BAIK. TUMBUH LEBIH JAUH.",
@@ -320,6 +346,33 @@ export function canonicalOriginError(value: string): string | null {
   return null;
 }
 
+const ICON_KEYS = new Set<string>(ICON_OPTIONS.map((option) => option.key));
+
+function parseLogo(raw: unknown, errors: FieldErrors, mode: Mode): SiteLogo {
+  const source = asRecord(raw);
+  const fallback = DEFAULT_SITE.logo;
+  const image = readImage(source, "image", "logo.image", errors, mode);
+  let logoMode: SiteLogo["mode"] = source.mode === "image" ? "image" : "text";
+  if (source.mode !== "image" && source.mode !== "text" && mode === "strict") {
+    errors["logo.mode"] = "Jenis logo tidak valid.";
+  }
+  if (logoMode === "image" && !image) {
+    if (mode === "strict") errors["logo.image"] = "Upload gambar logo, atau pilih logo teks.";
+    else logoMode = "text";
+  }
+  let icon = fallback.icon;
+  if (typeof source.icon === "string" && ICON_KEYS.has(source.icon)) icon = source.icon as IconKey;
+  else if (mode === "strict") errors["logo.icon"] = "Ikon tidak dikenal.";
+  return {
+    mode: logoMode,
+    icon,
+    word: readString(source, "word", fallback.word, 30, "logo.word", errors, mode, logoMode === "text"),
+    accent: readString(source, "accent", fallback.accent, 3, "logo.accent", errors, mode),
+    subtitle: readString(source, "subtitle", fallback.subtitle, 40, "logo.subtitle", errors, mode),
+    image,
+  };
+}
+
 function parseSite(raw: unknown, errors: FieldErrors, mode: Mode): SiteIdentity {
   const source = asRecord(raw);
   const announcement = asRecord(source.announcement);
@@ -330,6 +383,7 @@ function parseSite(raw: unknown, errors: FieldErrors, mode: Mode): SiteIdentity 
   }
   return {
     siteName: readString(source, "siteName", DEFAULT_SITE.siteName, SITE_NAME_MAX, "siteName", errors, mode, true),
+    logo: source.logo === undefined && mode === "lenient" ? DEFAULT_SITE.logo : parseLogo(source.logo, errors, mode),
     announcement: {
       visible: typeof announcement.visible === "boolean" ? announcement.visible : DEFAULT_SITE.announcement.visible,
       text: readString(announcement, "text", DEFAULT_SITE.announcement.text, 120, "announcement.text", errors, mode),
@@ -405,9 +459,14 @@ export function normalizeSeoSettings(raw: unknown): SeoSettings {
   return raw === undefined ? DEFAULT_SEO : parseSeo(raw, {}, "lenient");
 }
 
-/** Uploaded files the settings use, for upload cleanup. */
+/** Uploaded files the SEO settings use, for upload cleanup. */
 export function settingsUploads(seo: SeoSettings): string[] {
   return [seo.defaultOgImage, seo.favicon, seo.pages.home.ogImage, seo.pages.katalog.ogImage]
     .map((image) => image?.file)
     .filter((file): file is string => Boolean(file));
+}
+
+/** Uploaded files the site identity uses (the logo), for upload cleanup. */
+export function siteIdentityUploads(site: SiteIdentity): string[] {
+  return site.logo.image ? [site.logo.image.file] : [];
 }

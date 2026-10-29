@@ -43,9 +43,15 @@ export default async function SiteLayout({
         whatsappHref={whatsappHref}
         siteName={site.siteName}
         ctaLabel={site.headerCtaLabel}
+        logo={site.logo}
       />
       {children}
-      <Footer siteName={site.siteName} tagline={site.footer.tagline} bottomText={site.footer.bottomText} />
+      <Footer
+        siteName={site.siteName}
+        tagline={site.footer.tagline}
+        bottomText={site.footer.bottomText}
+        logo={site.logo}
+      />
       <a
         className="floating-wa"
         href={whatsappHref}

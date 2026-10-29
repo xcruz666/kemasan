@@ -1,14 +1,16 @@
-import { Layers2 } from "lucide-react";
-import { DEFAULT_SITE } from "@/lib/content/settings-shared";
+import { DEFAULT_SITE, type SiteLogo as SiteLogoSettings } from "@/lib/content/settings-shared";
 import { Multiline } from "./multiline";
+import { SiteLogo } from "./site-logo";
 
-/** Texts come from Situs & SEO; the logo and footer navigation are fixed design. */
+/** Texts and logo come from Situs & SEO; the footer navigation is fixed design. */
 export function Footer({
   siteName = DEFAULT_SITE.siteName,
   tagline = DEFAULT_SITE.footer.tagline,
   bottomText = DEFAULT_SITE.footer.bottomText,
+  logo = DEFAULT_SITE.logo,
 }: {
   siteName?: string;
+  logo?: SiteLogoSettings;
   /** "\n" becomes a line break. */
   tagline?: string;
   bottomText?: string;
@@ -17,15 +19,7 @@ export function Footer({
     <footer className="footer">
       <div className="container">
         <div className="footer-main">
-          <a className="brand" href="/" aria-label={`${siteName}, beranda`}>
-            <span className="brand-mark">
-              <Layers2 size={29} strokeWidth={1.7} />
-            </span>
-            <span>
-              optima<span className="brand-period">.</span>
-              <small>KEMASAN PRIMA</small>
-            </span>
-          </a>
+          <SiteLogo logo={logo} siteName={siteName} />
           <p>
             <Multiline text={tagline} />
           </p>

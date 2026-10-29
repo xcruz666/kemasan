@@ -51,7 +51,7 @@ Struktur mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/g
 - `/katalog` dan `/katalog/<slug>`: katalog produk yang berstatus Terbit. Produk yang ditandai Unggulan juga tampil di beranda.
 - `/<slug>`: halaman tambahan, misalnya Tentang Kami. Tambahkan ke menu header lewat Pengaturan.
 - `/admin/beranda`: semua isi halaman utama. Bagian selain hero bisa disembunyikan. Desain dan jumlah kartu tetap; hanya FAQ yang bisa ditambah atau dihapus.
-- `/admin/situs`: nama situs, bar pengumuman, footer, favicon, gambar preview link, SEO Beranda dan Katalog, serta domain canonical.
+- `/admin/situs`: nama situs, logo (teks bawaan yang bisa diubah atau gambar upload), bar pengumuman, footer, favicon, gambar preview link, SEO Beranda dan Katalog, serta domain canonical.
 - `/admin/pengaturan`: menu header (link bawaan bisa disembunyikan, link lain bisa ditambah) serta nomor WhatsApp dan pesan pembuka untuk semua tombol WhatsApp.
 - Data disimpan sebagai file JSON dan foto di folder `DATA_DIR` (lokal: `./data`, diabaikan git). Tidak ada database.
 - Untuk login lokal, isi `ADMIN_PASSWORD_HASH` (dari `npm run admin:hash-password`) dan `SESSION_SECRET` di `.env.local`.

@@ -1,10 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { type Dispatch, type SetStateAction, useActionState, useState } from "react";
 import { initialFormState } from "@/app/admin/actions/form-state";
 import { saveSiteIdentityAction } from "@/app/admin/actions/site";
+import { ICON_OPTIONS, type IconKey } from "@/lib/content/landing-shared";
 import { SITE_NAME_MAX, URL_MAX, type SiteIdentity } from "@/lib/content/settings-shared";
+import type { ImageRef } from "@/lib/content/types";
 import { FieldError, submitWithoutReset } from "./form-parts";
+import { SeoImageField } from "./seo-image-field";
 import { CardMessage } from "./whatsapp-settings-form";
 
 /* Client copies of the limits in validateSiteIdentity (settings-shared.ts). */
@@ -12,6 +15,9 @@ const ANNOUNCEMENT_TEXT_MAX = 120;
 const ANNOUNCEMENT_LABEL_MAX = 80;
 const FOOTER_TEXT_MAX = 120;
 const BUTTON_LABEL_MAX = 30;
+const LOGO_WORD_MAX = 30;
+const LOGO_ACCENT_MAX = 3;
+const LOGO_SUBTITLE_MAX = 40;
 
 type TextFieldProps = {
   id: string;
@@ -79,6 +85,16 @@ export function SiteIdentityForm({ site: initial }: { site: SiteIdentity }) {
     setSite((current) => ({ ...current, announcement: { ...current.announcement, ...patch } }));
   const setFooter = (patch: Partial<SiteIdentity["footer"]>) =>
     setSite((current) => ({ ...current, footer: { ...current.footer, ...patch } }));
+  const setLogo = (patch: Partial<SiteIdentity["logo"]>) =>
+    setSite((current) => ({ ...current, logo: { ...current.logo, ...patch } }));
+  const setLogoImage: Dispatch<SetStateAction<ImageRef | null>> = (update) =>
+    setSite((current) => ({
+      ...current,
+      logo: {
+        ...current.logo,
+        image: typeof update === "function" ? update(current.logo.image) : update,
+      },
+    }));
 
   return (
     <form className="admin-card admin-section" onSubmit={submitWithoutReset(formAction)}>
@@ -86,7 +102,7 @@ export function SiteIdentityForm({ site: initial }: { site: SiteIdentity }) {
       <div>
         <h2 className="admin-section-title">Identitas &amp; tampilan situs</h2>
         <p className="admin-help">
-          Teks di sekitar setiap halaman. Logo dan navigasi footer tidak berubah.
+          Logo dan teks di sekitar setiap halaman. Navigasi footer tidak berubah.
         </p>
       </div>
 
@@ -100,6 +116,98 @@ export function SiteIdentityForm({ site: initial }: { site: SiteIdentity }) {
         error={errors.siteName}
         help="Tampil di preview link WhatsApp/Telegram, di akhir judul halaman, dan di copyright footer."
       />
+
+      <fieldset className="admin-field admin-fieldset seo-group">
+        <legend className="admin-label">Logo</legend>
+        <p className="admin-help">Dipakai di header dan footer, juga sebagai logo untuk Google.</p>
+        <div className="seo-logo-modes" role="radiogroup" aria-label="Jenis logo">
+          <label className="admin-check">
+            <input
+              type="radio"
+              name="logo-mode"
+              checked={site.logo.mode === "text"}
+              onChange={() => setLogo({ mode: "text" })}
+            />
+            <span>Logo teks (desain bawaan, teks dan ikon bisa diubah)</span>
+          </label>
+          <label className="admin-check">
+            <input
+              type="radio"
+              name="logo-mode"
+              checked={site.logo.mode === "image"}
+              onChange={() => setLogo({ mode: "image" })}
+            />
+            <span>Gambar logo (upload)</span>
+          </label>
+        </div>
+        <FieldError id="site-logo-mode-error" message={errors["logo.mode"]} />
+
+        {site.logo.mode === "text" ? (
+          <>
+            <div className="admin-field">
+              <label className="admin-label" htmlFor="site-logo-icon">
+                Ikon
+              </label>
+              <select
+                id="site-logo-icon"
+                className="admin-input"
+                value={site.logo.icon}
+                onChange={(event) => setLogo({ icon: event.target.value as IconKey })}
+                aria-invalid={Boolean(errors["logo.icon"])}
+              >
+                {ICON_OPTIONS.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <FieldError id="site-logo-icon-error" message={errors["logo.icon"]} />
+            </div>
+            <div className="admin-field-row">
+              <TextField
+                id="site-logo-word"
+                label="Kata utama"
+                value={site.logo.word}
+                onChange={(word) => setLogo({ word })}
+                max={LOGO_WORD_MAX}
+                required
+                error={errors["logo.word"]}
+                help="Teks besar. Bawaan: optima."
+              />
+              <TextField
+                id="site-logo-accent"
+                label="Tanda berwarna"
+                value={site.logo.accent}
+                onChange={(accent) => setLogo({ accent })}
+                max={LOGO_ACCENT_MAX}
+                error={errors["logo.accent"]}
+                help="Tampil biru setelah kata utama. Bawaan: titik (.)."
+              />
+            </div>
+            <TextField
+              id="site-logo-subtitle"
+              label="Teks kecil di bawah"
+              value={site.logo.subtitle}
+              onChange={(subtitle) => setLogo({ subtitle })}
+              max={LOGO_SUBTITLE_MAX}
+              error={errors["logo.subtitle"]}
+              help="Huruf kecil berjarak di bawah kata utama. Bawaan: KEMASAN PRIMA. Kosongkan untuk menyembunyikan."
+            />
+          </>
+        ) : (
+          <SeoImageField
+            id="site-logo-image"
+            label="Gambar logo"
+            help="PNG atau WebP berlatar transparan, bentuk melebar. Tinggi tampil 47 px (40 px di HP), lebar maksimal 220 px."
+            image={site.logo.image}
+            onChange={setLogoImage}
+            fallbackUrl="/images/optima-logo.svg"
+            resetLabel="Hapus gambar"
+            shape="wide"
+            error={errors["logo.image"]}
+          />
+        )}
+      </fieldset>
 
       <fieldset className="admin-field admin-fieldset seo-group">
         <legend className="admin-label">Bar pengumuman</legend>

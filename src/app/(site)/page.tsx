@@ -47,20 +47,15 @@ export default async function Home() {
     ? uploadUrl(landing.product.image.file)
     : DEFAULT_PRODUCT_IMAGE;
   const whatsapp = toWhatsappContact(settings.whatsapp);
-  const defaultWhatsappHref = whatsappUrl(whatsapp.phone, whatsapp.defaultMessage);
+  const defaultWhatsappHref = whatsappUrl(
+    whatsapp.phone,
+    whatsapp.defaultMessage,
+  );
   // An empty message falls back to the site-wide default from Pengaturan.
   const whatsappHref = (message: string) =>
     message ? whatsappUrl(whatsapp.phone, message) : defaultWhatsappHref;
-  const {
-    hero,
-    proof,
-    benefits,
-    product,
-    applications,
-    steps,
-    faq,
-    contact,
-  } = landing;
+  const { hero, proof, benefits, product, applications, steps, faq, contact } =
+    landing;
 
   return (
     <>
@@ -72,6 +67,11 @@ export default async function Home() {
           pageTitle={pageTitle}
           description={homeSeo.description}
           images={[heroSrc, productSrc]}
+          logoUrl={
+            settings.site.logo.mode === "image" && settings.site.logo.image
+              ? uploadUrl(settings.site.logo.image.file)
+              : undefined
+          }
         />
       )}
       <main id="main">

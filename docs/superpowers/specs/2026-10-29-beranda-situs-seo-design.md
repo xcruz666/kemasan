@@ -13,7 +13,8 @@ Semua isi beranda, teks di sekitar setiap halaman, dan SEO bisa diubah dari admi
 | Daftar item beranda | Jumlah kartu tetap sesuai desain (strip 4, keunggulan 3, spesifikasi 5, aplikasi 4, langkah 3). FAQ 1–12 dan pilihan produk form penawaran 1–10 bisa ditambah/dihapus. |
 | Canonical | Domain canonical global (kosong = `SITE_URL`) dan override per halaman: Beranda, Katalog, setiap produk, setiap halaman. Harus URL http(s) lengkap. |
 | Tambahan | Foto hero dan foto bagian produk, saklar tampil per bagian (hero selalu tampil karena memuat H1), bar pengumuman dan footer, pesan WhatsApp per tombol. |
-| Tetap (desain) | Logo "optima. KEMASAN PRIMA", navigasi footer, nomor urut kartu/langkah, ikon pada label material hero, CSS dan struktur elemen. |
+| Logo | Dua mode di Situs & SEO: logo teks (ikon, kata utama, tanda berwarna, teks kecil; markup desain sama) atau gambar upload (tinggi 47 px, 40 px di HP, lebar maks. 220 px). Dipakai di header, footer, dan logo Organization di structured data. |
+| Tetap (desain) | Navigasi footer, nomor urut kartu/langkah, ikon pada label material hero, CSS dan struktur elemen. |
 | Bawaan | Isi bawaan sama persis dengan teks sebelumnya, sehingga HTML tidak berubah sampai admin mengedit. |
 
 ## Penyimpanan

@@ -1322,3 +1322,9 @@
     flex-basis: 100%;
   }
 }
+
+.seo-logo-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
