@@ -4,9 +4,11 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { savePageAction } from "@/app/admin/actions/pages";
 import { initialFormState } from "@/app/admin/actions/form-state";
+import { URL_MAX } from "@/lib/content/settings-shared";
 import { slugify } from "@/lib/content/slug";
 import type { ImageRef, Page, Status } from "@/lib/content/types";
 import { Counter, FieldError, FormMessage, submitWithoutReset } from "./form-parts";
+import { CANONICAL_WARNING } from "./seo-page-card";
 import { SingleImageField } from "./image-field";
 import { MarkdownEditor } from "./markdown-editor";
 
@@ -22,6 +24,7 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
   const [status, setStatus] = useState<Status>(page?.status ?? "draft");
   const [seoTitle, setSeoTitle] = useState(page?.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(page?.seoDescription ?? "");
+  const [canonicalUrl, setCanonicalUrl] = useState(page?.canonicalUrl ?? "");
 
   const payload = JSON.stringify({
     title,
@@ -34,6 +37,7 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
     status,
     seoTitle,
     seoDescription,
+    canonicalUrl,
   });
 
   function changeTitle(value: string) {
@@ -149,7 +153,7 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
 
       <details
         className="admin-card admin-section admin-details"
-        open={Boolean(errors.seoTitle || errors.seoDescription) || undefined}
+        open={Boolean(errors.seoTitle || errors.seoDescription || errors.canonicalUrl) || undefined}
       >
         <summary className="admin-section-title">SEO (opsional)</summary>
         <div className="admin-field">
@@ -188,6 +192,29 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
             aria-describedby={describedBy("seoDescription")}
           />
           <FieldError id="page-seoDescription-error" message={errors.seoDescription} />
+        </div>
+        <div className="admin-field">
+          <label className="admin-label" htmlFor="page-canonical-url">
+            Canonical URL
+          </label>
+          <input
+            id="page-canonical-url"
+            className="admin-input"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={canonicalUrl}
+            onChange={(event) => setCanonicalUrl(event.target.value)}
+            maxLength={URL_MAX}
+            placeholder="Kosong = alamat halaman ini"
+            aria-invalid={Boolean(errors.canonicalUrl)}
+            aria-describedby={["page-canonical-url-help", describedBy("canonicalUrl")].filter(Boolean).join(" ")}
+          />
+          <p className="admin-help" id="page-canonical-url-help">
+            Kosongkan agar memakai alamat halaman ini.{" "}
+            <span className="admin-warning-text">{CANONICAL_WARNING}</span>
+          </p>
+          <FieldError id="page-canonicalUrl-error" message={errors.canonicalUrl} />
         </div>
       </details>
 

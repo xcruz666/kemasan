@@ -15,21 +15,37 @@ export default async function SiteLayout({
   const [settings, pages] = await Promise.all([getSiteSettings(), getPublishedPages()]);
   const links = resolveHeaderMenu(settings.headerMenu, pages);
   const whatsappHref = whatsappUrl(settings.whatsapp.phone, settings.whatsapp.defaultMessage);
+  const { announcement, ...site } = settings.site;
 
   return (
     <>
       <a className="skip-link" href="#main">
         Langsung ke konten
       </a>
-      <div className="announcement">
-        <span>KEMAS LEBIH BAIK. TUMBUH LEBIH JAUH.</span>
-        <a href="/#konsultasi">
-          Terbuka untuk pemesanan grosir <ArrowUpRight size={14} />
-        </a>
-      </div>
-      <Header links={links} whatsappHref={whatsappHref} />
+      {announcement.visible && (
+        <div className="announcement">
+          {announcement.text && <span>{announcement.text}</span>}
+          {announcement.linkLabel && announcement.linkHref && (
+            <a
+              href={announcement.linkHref}
+              {...(/^https?:/i.test(announcement.linkHref) && {
+                target: "_blank",
+                rel: "noopener noreferrer",
+              })}
+            >
+              {announcement.linkLabel} <ArrowUpRight size={14} />
+            </a>
+          )}
+        </div>
+      )}
+      <Header
+        links={links}
+        whatsappHref={whatsappHref}
+        siteName={site.siteName}
+        ctaLabel={site.headerCtaLabel}
+      />
       {children}
-      <Footer />
+      <Footer siteName={site.siteName} tagline={site.footer.tagline} bottomText={site.footer.bottomText} />
       <a
         className="floating-wa"
         href={whatsappHref}
@@ -38,7 +54,7 @@ export default async function SiteLayout({
         aria-label="Konsultasi melalui WhatsApp"
       >
         <WhatsAppIcon size={25} />
-        <span>Chat kami</span>
+        <span>{site.floatingLabel}</span>
       </a>
     </>
   );

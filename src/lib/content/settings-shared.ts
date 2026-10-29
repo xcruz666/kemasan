@@ -121,6 +121,8 @@ export const DEFAULT_SEO: SeoSettings = {
 export const SITE_NAME_MAX = 60;
 export const SEO_TITLE_MAX = 70;
 export const SEO_DESCRIPTION_MAX = 160;
+/** Link preview descriptions may run a little longer than meta descriptions. */
+export const OG_DESCRIPTION_MAX = 200;
 export const URL_MAX = 300;
 
 export const MENU_MAX_ITEMS = 12;
@@ -352,7 +354,7 @@ function parsePageSeo(raw: unknown, fallback: PageSeo, prefix: string, errors: F
     title: readString(source, "title", fallback.title, SEO_TITLE_MAX, `${prefix}.title`, errors, mode, true),
     description: readString(source, "description", fallback.description, SEO_DESCRIPTION_MAX, `${prefix}.description`, errors, mode, true),
     ogTitle: readString(source, "ogTitle", fallback.ogTitle, SEO_TITLE_MAX, `${prefix}.ogTitle`, errors, mode),
-    ogDescription: readString(source, "ogDescription", fallback.ogDescription, 200, `${prefix}.ogDescription`, errors, mode),
+    ogDescription: readString(source, "ogDescription", fallback.ogDescription, OG_DESCRIPTION_MAX, `${prefix}.ogDescription`, errors, mode),
     ogImage: readImage(source, "ogImage", `${prefix}.ogImage`, errors, mode),
     canonical: canonicalError ? (mode === "lenient" ? "" : canonical) : canonical,
   };

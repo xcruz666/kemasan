@@ -363,7 +363,9 @@ const VARIABLE_LISTS: Record<string, { min: number; max: number; label: string }
 
 const REQUIRED_FIELDS = new Set(["hero.title", "faq.items.question", "faq.items.answer"]);
 
-function maxLength(key: string) {
+/** Character limit for a text field, by its path ("faq.items.2.answer") or key ("answer"). */
+export function landingMaxLength(path: string) {
+  const key = path.split(".").filter((part) => !/^\d+$/.test(part)).pop() ?? "";
   if (/message|template/i.test(key)) return 1000;
   if (key === "answer" || key === "description" || key === "text") return 600;
   return 200;
@@ -406,7 +408,7 @@ function normalize(
       return fallback;
     }
     const value = input.replace(/\r\n?/g, "\n").trim();
-    const max = maxLength(key);
+    const max = landingMaxLength(key);
     if (mode === "strict") {
       if (!value && REQUIRED_FIELDS.has(shapeKey)) errors[pathKey] = "Wajib diisi.";
       else if (value.length > max) errors[pathKey] = `Maksimal ${max} karakter.`;

@@ -31,7 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: site.siteName,
     description: seo.defaultDescription,
     icons: favicon
-      ? { icon: [favicon], apple: [favicon] }
+      ? // iOS home-screen icons need PNG; a WebP favicon is used for browser tabs only.
+        { icon: [favicon], ...(favicon.type === "image/png" && { apple: [favicon] }) }
       : { icon: [{ url: "/icon.svg", type: "image/svg+xml" }] },
     robots: {
       index: true,

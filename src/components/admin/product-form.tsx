@@ -5,10 +5,12 @@ import Link from "next/link";
 import { Plus, X } from "lucide-react";
 import { saveProductAction } from "@/app/admin/actions/products";
 import { initialFormState } from "@/app/admin/actions/form-state";
+import { URL_MAX } from "@/lib/content/settings-shared";
 import { slugify } from "@/lib/content/slug";
 import type { Category, ImageRef, Product, Status } from "@/lib/content/types";
 import { priceLabel } from "@/lib/format";
 import { Counter, FieldError, FormMessage, submitWithoutReset } from "./form-parts";
+import { CANONICAL_WARNING } from "./seo-page-card";
 import { ImageGalleryField } from "./image-field";
 import { MarkdownEditor } from "./markdown-editor";
 
@@ -48,6 +50,7 @@ export function ProductForm({
   const [sortOrder, setSortOrder] = useState(String(product?.sortOrder ?? 0));
   const [seoTitle, setSeoTitle] = useState(product?.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(product?.seoDescription ?? "");
+  const [canonicalUrl, setCanonicalUrl] = useState(product?.canonicalUrl ?? "");
 
   const payload = JSON.stringify({
     name,
@@ -64,6 +67,7 @@ export function ProductForm({
     sortOrder: sortOrder.trim() === "" ? 0 : Number(sortOrder),
     seoTitle,
     seoDescription,
+    canonicalUrl,
   });
 
   function changeName(value: string) {
@@ -341,7 +345,7 @@ export function ProductForm({
 
       <details
         className="admin-card admin-section admin-details"
-        open={Boolean(errors.seoTitle || errors.seoDescription) || undefined}
+        open={Boolean(errors.seoTitle || errors.seoDescription || errors.canonicalUrl) || undefined}
       >
         <summary className="admin-section-title">SEO (opsional)</summary>
         <div className="admin-field">
@@ -380,6 +384,29 @@ export function ProductForm({
             aria-describedby={describedBy("seoDescription")}
           />
           <FieldError id="product-seoDescription-error" message={errors.seoDescription} />
+        </div>
+        <div className="admin-field">
+          <label className="admin-label" htmlFor="product-canonical-url">
+            Canonical URL
+          </label>
+          <input
+            id="product-canonical-url"
+            className="admin-input"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            value={canonicalUrl}
+            onChange={(event) => setCanonicalUrl(event.target.value)}
+            maxLength={URL_MAX}
+            placeholder="Kosong = alamat halaman ini"
+            aria-invalid={Boolean(errors.canonicalUrl)}
+            aria-describedby={["product-canonical-url-help", describedBy("canonicalUrl")].filter(Boolean).join(" ")}
+          />
+          <p className="admin-help" id="product-canonical-url-help">
+            Kosongkan agar memakai alamat halaman ini.{" "}
+            <span className="admin-warning-text">{CANONICAL_WARNING}</span>
+          </p>
+          <FieldError id="product-canonicalUrl-error" message={errors.canonicalUrl} />
         </div>
       </details>
 

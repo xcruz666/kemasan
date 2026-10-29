@@ -20,11 +20,11 @@ npm start
 
 ## Konten dan kontak
 
-- `src/app/(site)/page.tsx`: konten beranda, spesifikasi, FAQ, dan bagian pemasaran.
-- `src/app/(site)/layout.tsx`: header, footer, dan tombol WhatsApp untuk semua halaman publik.
+- Semua teks, foto, dan pesan WhatsApp di beranda diatur di `/admin/beranda`. Teks bawaan ada di `src/lib/content/landing-shared.ts`; tampilannya di `src/app/(site)/page.tsx`.
+- Nama situs, bar pengumuman, teks footer, dan label tombol diatur di `/admin/situs`. Tampilannya di `src/app/(site)/layout.tsx`.
 - `src/app/globals.css`: token warna, tata letak, dan tampilan mobile.
-- `src/lib/brand.ts`: nama brand dan pembentuk tautan WhatsApp. Nomor WhatsApp diatur di `/admin/pengaturan` (nilai bawaan di `src/lib/content/settings-shared.ts`).
-- `src/components/quote-form.tsx`: pilihan produk, ukuran, dan jumlah yang dimasukkan ke pesan WhatsApp.
+- `src/lib/brand.ts`: pembentuk tautan WhatsApp. Nomor WhatsApp diatur di `/admin/pengaturan` (nilai bawaan di `src/lib/content/settings-shared.ts`).
+- `src/components/quote-form.tsx`: formulir penawaran. Pilihan produk dan template pesannya diatur di `/admin/beranda`.
 
 Formulir hanya menyusun tautan WhatsApp. Data tidak disimpan atau dikirim ke server situs. Pesan baru terkirim setelah pengunjung mengirimkannya sendiri di WhatsApp.
 
@@ -50,6 +50,8 @@ Struktur mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/g
 - `/admin`: login satu password. Kelola produk, kategori, dan halaman. Editor punya mode visual dan Markdown.
 - `/katalog` dan `/katalog/<slug>`: katalog produk yang berstatus Terbit. Produk yang ditandai Unggulan juga tampil di beranda.
 - `/<slug>`: halaman tambahan, misalnya Tentang Kami. Tambahkan ke menu header lewat Pengaturan.
+- `/admin/beranda`: semua isi halaman utama. Bagian selain hero bisa disembunyikan. Desain dan jumlah kartu tetap; hanya FAQ yang bisa ditambah atau dihapus.
+- `/admin/situs`: nama situs, bar pengumuman, footer, favicon, gambar preview link, SEO Beranda dan Katalog, serta domain canonical.
 - `/admin/pengaturan`: menu header (link bawaan bisa disembunyikan, link lain bisa ditambah) serta nomor WhatsApp dan pesan pembuka untuk semua tombol WhatsApp.
 - Data disimpan sebagai file JSON dan foto di folder `DATA_DIR` (lokal: `./data`, diabaikan git). Tidak ada database.
 - Untuk login lokal, isi `ADMIN_PASSWORD_HASH` (dari `npm run admin:hash-password`) dan `SESSION_SECRET` di `.env.local`.
@@ -60,3 +62,5 @@ Gunakan Node.js 24 (`nvm use`, lihat `.nvmrc`).
 ## SEO
 
 Salin `.env.example` ke `.env.local` dan isi `SITE_URL` dengan origin domain publik, misalnya `https://www.example.com`. Untuk shared hosting, masukkan variabel `SITE_URL` di pengaturan environment aplikasi Node.js. Canonical, sitemap, robots, Open Graph, dan structured data memakai URL tersebut saat server berjalan. Tanpa domain publik, canonical dan sitemap menunggu sampai `SITE_URL` diatur.
+
+Domain canonical di `/admin/situs` menggantikan `SITE_URL` untuk canonical, sitemap, dan preview link. Produk dan halaman punya kolom Canonical URL opsional; kosong berarti URL halaman itu sendiri. Judul dan deskripsi preview (Open Graph) bisa dibedakan dari judul halaman. WhatsApp dan Telegram menyimpan cache preview, jadi link yang pernah dibagikan bisa tetap menampilkan versi lama.

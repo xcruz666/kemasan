@@ -1,12 +1,23 @@
 import { Layers2 } from "lucide-react";
-import { brand } from "@/lib/brand";
+import { DEFAULT_SITE } from "@/lib/content/settings-shared";
+import { Multiline } from "./multiline";
 
-export function Footer() {
+/** Texts come from Situs & SEO; the logo and footer navigation are fixed design. */
+export function Footer({
+  siteName = DEFAULT_SITE.siteName,
+  tagline = DEFAULT_SITE.footer.tagline,
+  bottomText = DEFAULT_SITE.footer.bottomText,
+}: {
+  siteName?: string;
+  /** "\n" becomes a line break. */
+  tagline?: string;
+  bottomText?: string;
+}) {
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-main">
-          <a className="brand" href="/" aria-label={`${brand.name}, beranda`}>
+          <a className="brand" href="/" aria-label={`${siteName}, beranda`}>
             <span className="brand-mark">
               <Layers2 size={29} strokeWidth={1.7} />
             </span>
@@ -16,9 +27,7 @@ export function Footer() {
             </span>
           </a>
           <p>
-            Kemasan baik.
-            <br />
-            Kesegaran terjaga.
+            <Multiline text={tagline} />
           </p>
           <nav aria-label="Navigasi footer">
             <a href="/#produk">Produk</a>
@@ -28,8 +37,8 @@ export function Footer() {
           </nav>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} {brand.name}.</span>
-          <span>Partner kemasan untuk usaha Anda.</span>
+          <span>© {new Date().getFullYear()} {siteName}.</span>
+          <span>{bottomText}</span>
           <a href="#">Kembali ke atas ↑</a>
         </div>
       </div>

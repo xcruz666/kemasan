@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Layers2, Menu, X } from "lucide-react";
-import { brand } from "@/lib/brand";
+import { DEFAULT_SITE } from "@/lib/content/settings-shared";
 import { WhatsAppIcon } from "./whatsapp-icon";
 
 /** external links (https://…) open in a new tab. */
@@ -15,10 +15,15 @@ function linkTarget(link: NavLink) {
 export function Header({
   links,
   whatsappHref,
+  siteName = DEFAULT_SITE.siteName,
+  ctaLabel = DEFAULT_SITE.headerCtaLabel,
 }: {
   links: NavLink[];
   /** wa.me link with the default message from admin settings. */
   whatsappHref: string;
+  /** Used in aria-labels only; the logo itself is fixed design. */
+  siteName?: string;
+  ctaLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -31,7 +36,7 @@ export function Header({
   return (
     <header className="site-header">
       <div className="container nav-wrap">
-        <a className="brand" href="/" aria-label={`${brand.name}, beranda`}>
+        <a className="brand" href="/" aria-label={`${siteName}, beranda`}>
           <span className="brand-mark">
             <Layers2 size={29} strokeWidth={1.7} />
           </span>
@@ -52,9 +57,9 @@ export function Header({
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Hubungi Optima Kemasan Prima via WhatsApp"
+          aria-label={`Hubungi ${siteName} via WhatsApp`}
         >
-          <WhatsAppIcon size={19} /> <span>Hubungi kami</span>
+          <WhatsAppIcon size={19} /> <span>{ctaLabel}</span>
         </a>
         <button
           className="menu-toggle"

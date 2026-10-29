@@ -1,25 +1,12 @@
 import Image from "next/image";
-import {
-  ArrowDown,
-  ArrowUpRight,
-  Layers2,
-  Check,
-  Snowflake,
-  Package,
-  ShieldCheck,
-  Factory,
-  Ruler,
-  Fish,
-  Beef,
-  Carrot,
-  Utensils,
-  Plus,
-} from "lucide-react";
+import { ArrowDown, ArrowUpRight, Layers2, Check, Plus } from "lucide-react";
 import Link from "next/link";
+import { LandingIcon } from "@/components/landing-icon";
+import { Multiline } from "@/components/multiline";
 import { ProductCard } from "@/components/product-card";
 import { QuoteForm } from "@/components/quote-form";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
-import { brand, whatsappUrl } from "@/lib/brand";
+import { whatsappUrl } from "@/lib/brand";
 import { getFeaturedProducts } from "@/lib/content/products";
 import { getLanding } from "@/lib/content/landing";
 import {
@@ -41,54 +28,8 @@ export function generateMetadata() {
   return builtInPageMetadata("home", "/");
 }
 
-const applications = [
-  {
-    icon: Beef,
-    name: "Daging & unggas",
-    text: "Dari potongan segar hingga stok beku, kemas dengan lebih rapat.",
-    number: "01",
-  },
-  {
-    icon: Fish,
-    name: "Ikan & seafood",
-    text: "Kemasan jernih yang memperlihatkan kualitas produk Anda.",
-    number: "02",
-  },
-  {
-    icon: Carrot,
-    name: "Sayur & buah",
-    text: "Porsi lebih rapi untuk persiapan bahan dan kebutuhan distribusi.",
-    number: "03",
-  },
-  {
-    icon: Utensils,
-    name: "Produk olahan",
-    text: "Untuk sosis, bakso, dan berbagai produk siap diolah.",
-    number: "04",
-  },
-];
-const faqs = [
-  [
-    "Apakah ukuran dan ketebalannya bisa disesuaikan?",
-    "Bisa. Selain ketebalan standar 75 mikron, Anda dapat mendiskusikan ukuran dan ketebalan sesuai produk yang dikemas. Kirim kebutuhan melalui WhatsApp untuk konfirmasi pilihan dan ketersediaannya.",
-  ],
-  [
-    "Berapa harga dan minimum pemesanannya?",
-    "Harga dan minimum pemesanan menyesuaikan ukuran, ketebalan, dan jumlah kebutuhan. Hubungi kami dengan detail tersebut agar tim dapat memberikan penawaran yang sesuai.",
-  ],
-  [
-    "Apakah cocok untuk mesin vacuum saya?",
-    "Kecocokan kantong bergantung pada jenis mesin dan permukaan kantong yang dibutuhkan. Sampaikan merek atau tipe mesin Anda saat konsultasi agar kami dapat membantu memastikan kecocokannya sebelum pemesanan.",
-  ],
-  [
-    "Apakah kantong ini bisa digunakan untuk produk beku?",
-    "Kantong vacuum dapat membantu melindungi produk selama penyimpanan beku bila proses pengemasan dan penyimpanannya tepat. Informasikan jenis produk serta kondisi penyimpanan Anda untuk rekomendasi kemasan.",
-  ],
-  [
-    "Bagaimana proses pemesanan dan pengirimannya?",
-    "Kirim kebutuhan produk, ukuran, dan jumlah melalui WhatsApp. Setelah spesifikasi, harga, serta ketersediaan disepakati, tim akan mengonfirmasi pembayaran, jadwal, dan biaya pengiriman ke alamat Anda.",
-  ],
-];
+/** Card and step numbers are part of the design, not editable content. */
+const itemNumber = (index: number) => String(index + 1).padStart(2, "0");
 
 export default async function Home() {
   const [featured, settings, landing, siteUrl] = await Promise.all([
@@ -107,6 +48,19 @@ export default async function Home() {
     : DEFAULT_PRODUCT_IMAGE;
   const whatsapp = toWhatsappContact(settings.whatsapp);
   const defaultWhatsappHref = whatsappUrl(whatsapp.phone, whatsapp.defaultMessage);
+  // An empty message falls back to the site-wide default from Pengaturan.
+  const whatsappHref = (message: string) =>
+    message ? whatsappUrl(whatsapp.phone, message) : defaultWhatsappHref;
+  const {
+    hero,
+    proof,
+    benefits,
+    product,
+    applications,
+    steps,
+    faq,
+    contact,
+  } = landing;
 
   return (
     <>
@@ -124,398 +78,332 @@ export default async function Home() {
         <section className="hero container" aria-labelledby="hero-title">
           <div className="hero-copy">
             <div className="eyebrow hero-eyebrow">
-              <span className="tiny-line" /> PARTNER KEMASAN BISNIS ANDA
+              <span className="tiny-line" /> {hero.eyebrow}
             </div>
             <h1 id="hero-title">
-              Yang segar,
-              <br />
-              tetap{" "}
-              <span className="fresh-word">
-                segar.
-                <svg
-                  viewBox="0 0 320 14"
-                  preserveAspectRatio="none"
-                  aria-hidden="true"
-                >
-                  <path d="M3 10Q155 0 316 7" />
-                </svg>
-              </span>
+              <Multiline text={hero.title} />
+              {hero.highlight && (
+                <>
+                  {" "}
+                  <span className="fresh-word">
+                    {hero.highlight}
+                    <svg
+                      viewBox="0 0 320 14"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <path d="M3 10Q155 0 316 7" />
+                    </svg>
+                  </span>
+                </>
+              )}
             </h1>
             <p className="hero-description">
-              Kantong vacuum premium untuk menjaga kualitas produk. Dari dapur
-              usaha hingga kebutuhan industri.
+              <Multiline text={hero.description} />
             </p>
             <div className="hero-actions">
               <a
                 className="button"
-                href={defaultWhatsappHref}
+                href={whatsappHref(hero.primaryMessage)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <WhatsAppIcon /> Tanya harga grosir
+                <WhatsAppIcon /> {hero.primaryLabel}
               </a>
               <a className="text-link" href="#produk">
-                Kenali produknya <ArrowDown size={17} />
+                {hero.secondaryLabel} <ArrowDown size={17} />
               </a>
             </div>
             <div className="hero-footnote">
               <span className="check-circle">
                 <Check size={13} />
               </span>{" "}
-              Ukuran fleksibel <span className="separator" /> Pasokan langsung
-              dari pabrik
+              {hero.footnotes[0]} <span className="separator" />{" "}
+              {hero.footnotes[1]}
             </div>
           </div>
           <div className="hero-visual">
             <Image
-              src="/images/vacuum-food.webp"
-              alt="Ilustrasi salmon dan brokoli di dalam kantong vacuum bening"
+              src={heroSrc}
+              alt={hero.imageAlt}
               fill
               priority
               sizes="(max-width: 900px) 100vw, 55vw"
               className="hero-image"
+              unoptimized={Boolean(hero.image)}
             />
             <div className="image-top-label">
-              <span className="label-dot" /> KESEGARAN, TERBUNGKUS RAPI.
+              <span className="label-dot" /> {hero.topLabel}
             </div>
             <div className="material-tag">
               <Layers2 size={23} />
               <span>
-                Jernih. Rapat. Kuat.<small>NYLON + LLDPE</small>
+                {hero.materialTitle}
+                <small>{hero.materialNote}</small>
               </span>
             </div>
-            <div className="image-caption">Ilustrasi penggunaan produk</div>
+            <div className="image-caption">{hero.caption}</div>
             <div className="round-note">
-              <span>DIBUAT UNTUK</span>
+              <span>{hero.roundTop}</span>
               <strong>
-                lebih
-                <br />
-                terjaga.
+                <Multiline text={hero.roundMain} />
               </strong>
-              <span>SETIAP HARI</span>
+              <span>{hero.roundBottom}</span>
             </div>
           </div>
         </section>
 
-        <section
-          className="proof-strip container"
-          aria-label="Karakteristik produk"
-        >
-          <div>
-            <ShieldCheck />
-            <span>
-              Material <strong>food grade</strong>
-            </span>
-          </div>
-          <div>
-            <Layers2 />
-            <span>
-              Ketebalan <strong>75 mikron</strong>
-            </span>
-          </div>
-          <div>
-            <Ruler />
-            <span>
-              Ukuran <strong>sesuai kebutuhan</strong>
-            </span>
-          </div>
-          <div>
-            <Factory />
-            <span>
-              Dukungan <strong>skala industri</strong>
-            </span>
-          </div>
-        </section>
+        {proof.visible && (
+          <section
+            className="proof-strip container"
+            aria-label="Karakteristik produk"
+          >
+            {proof.items.map((item, index) => (
+              <div key={index}>
+                <LandingIcon name={item.icon} />
+                <span>
+                  {item.text} <strong>{item.strong}</strong>
+                </span>
+              </div>
+            ))}
+          </section>
+        )}
 
-        <section id="keunggulan" className="section container benefits">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">01 / LEBIH DARI SEKADAR PLASTIK</p>
-              <h2>
-                Produk Anda berharga.
-                <br />
-                Kemas dengan semestinya.
-              </h2>
-            </div>
-            <p>
-              Di balik produk yang baik, ada kemasan yang bekerja dengan baik.
-              Sampai ke tangan pelanggan.
-            </p>
-          </div>
-          <div className="benefit-grid">
-            <article>
-              <span className="feature-icon">
-                <ShieldCheck strokeWidth={1.4} />
-              </span>
-              <h3>Kesegaran lebih terjaga</h3>
+        {benefits.visible && (
+          <section id="keunggulan" className="section container benefits">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">{benefits.eyebrow}</p>
+                <h2>
+                  <Multiline text={benefits.title} />
+                </h2>
+              </div>
               <p>
-                Kemasan rapat membantu mengurangi kontak dengan udara dan
-                menjaga kualitas produk selama penyimpanan.
+                <Multiline text={benefits.description} />
               </p>
-            </article>
-            <article>
-              <span className="feature-icon">
-                <Snowflake strokeWidth={1.4} />
-              </span>
-              <h3>Siap masuk freezer</h3>
-              <p>
-                Membantu melindungi produk dari freezer burn, dengan proses
-                vacuum dan penyimpanan yang tepat.
-              </p>
-            </article>
-            <article>
-              <span className="feature-icon">
-                <Package strokeWidth={1.4} />
-              </span>
-              <h3>Ruang lebih efisien</h3>
-              <p>
-                Tanpa udara berlebih. Produk lebih ringkas, mudah ditata, dan
-                memaksimalkan ruang penyimpanan Anda.
-              </p>
-            </article>
-          </div>
-        </section>
-
-        <section id="produk" className="product-section">
-          <div className="container product-grid">
-            <div className="product-photo">
-              <Image
-                src="/images/vacuum-pouches.webp"
-                alt="Ilustrasi tumpukan kantong vacuum transparan dengan tepi tersegel"
-                fill
-                sizes="(max-width: 900px) 100vw, 48vw"
-              />
-              <span className="product-photo-label">
-                KANTONG VACUUM / SERI PREMIUM
-              </span>
-              <span className="product-photo-note">Ilustrasi produk</span>
             </div>
-            <div className="product-details">
-              <p className="eyebrow">02 / KENALI KEMASAN ANDA</p>
-              <h2>
-                Sederhana bentuknya.
-                <br />
-                Serius kualitasnya.
-              </h2>
-              <p className="section-description">
-                Kantong vacuum bening dengan komposisi material premium.
-                Dirancang untuk kebutuhan pengemasan usaha Anda.
-              </p>
-              <dl className="spec-list">
-                <div>
-                  <dt>Material</dt>
-                  <dd>Nylon + LLDPE</dd>
-                </div>
-                <div>
-                  <dt>Ketebalan standar</dt>
-                  <dd>75 mikron</dd>
-                </div>
-                <div>
-                  <dt>Tampilan</dt>
-                  <dd>Bening / transparan</dd>
-                </div>
-                <div>
-                  <dt>Pilihan ukuran</dt>
-                  <dd>Sesuai kebutuhan</dd>
-                </div>
-                <div>
-                  <dt>Ketebalan lainnya</dt>
-                  <dd>Tersedia sesuai konsultasi</dd>
-                </div>
-              </dl>
-              <a
-                className="text-link product-link"
-                href={whatsappUrl(
-                  whatsapp.phone,
-                  `Halo ${brand.name}, saya ingin konsultasi ukuran dan ketebalan kantong vacuum yang cocok untuk produk dan mesin saya.`,
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Temukan ukuran yang pas <ArrowUpRight size={19} />
-              </a>
+            <div className="benefit-grid">
+              {benefits.cards.map((card, index) => (
+                <article key={index}>
+                  <span className="feature-icon">
+                    <LandingIcon name={card.icon} strokeWidth={1.4} />
+                  </span>
+                  <h3>{card.title}</h3>
+                  <p>
+                    <Multiline text={card.text} />
+                  </p>
+                </article>
+              ))}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {featured.length > 0 && (
+        {product.visible && (
+          <section id="produk" className="product-section">
+            <div className="container product-grid">
+              <div className="product-photo">
+                <Image
+                  src={productSrc}
+                  alt={product.imageAlt}
+                  fill
+                  sizes="(max-width: 900px) 100vw, 48vw"
+                  unoptimized={Boolean(product.image)}
+                />
+                <span className="product-photo-label">
+                  {product.photoLabel}
+                </span>
+                <span className="product-photo-note">{product.photoNote}</span>
+              </div>
+              <div className="product-details">
+                <p className="eyebrow">{product.eyebrow}</p>
+                <h2>
+                  <Multiline text={product.title} />
+                </h2>
+                <p className="section-description">
+                  <Multiline text={product.description} />
+                </p>
+                <dl className="spec-list">
+                  {product.specs.map((spec, index) => (
+                    <div key={index}>
+                      <dt>{spec.label}</dt>
+                      <dd>{spec.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <a
+                  className="text-link product-link"
+                  href={whatsappHref(product.linkMessage)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {product.linkLabel} <ArrowUpRight size={19} />
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {landing.featured.visible && featured.length > 0 && (
           <section
             className="section container featured-section"
             aria-labelledby="produk-unggulan-title"
           >
             <div className="section-heading">
               <div>
-                <p className="eyebrow">PRODUK UNGGULAN</p>
+                <p className="eyebrow">{landing.featured.eyebrow}</p>
                 <h2 id="produk-unggulan-title">
-                  Pilihan kemasan
-                  <br />
-                  untuk usaha Anda.
+                  <Multiline text={landing.featured.title} />
                 </h2>
               </div>
               <p>
-                Lihat detail ukuran, spesifikasi, dan harga, lalu tanyakan
-                ketersediaannya langsung ke tim kami.
+                <Multiline text={landing.featured.description} />
               </p>
             </div>
             <div className="product-card-grid">
-              {featured.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {featured.map((item) => (
+                <ProductCard key={item.id} product={item} />
               ))}
             </div>
             <Link className="text-link featured-link" href="/katalog">
-              Lihat semua produk <ArrowUpRight size={18} />
+              {landing.featured.linkLabel} <ArrowUpRight size={18} />
             </Link>
           </section>
         )}
 
-        <section className="section container applications">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">03 / SATU KEMASAN, BANYAK KEBUTUHAN</p>
-              <h2>
-                Apapun usaha Anda,
-                <br />
-                kami bantu kemas.
-              </h2>
-            </div>
-            <a className="text-link" href="#konsultasi">
-              Diskusikan kebutuhan Anda <ArrowUpRight size={18} />
-            </a>
-          </div>
-          <div className="application-grid">
-            {applications.map(({ icon: Icon, name, text, number }) => (
-              <a
-                className="application-card"
-                href={whatsappUrl(
-                  whatsapp.phone,
-                  `Halo ${brand.name}, saya ingin konsultasi kantong vacuum untuk ${name.toLowerCase()}. Mohon rekomendasi ukuran dan penawaran harganya.`,
-                )}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={name}
-              >
-                <div className="application-top">
-                  <Icon size={34} strokeWidth={1.2} />
-                  <span>{number}</span>
-                </div>
-                <h3>{name}</h3>
-                <p>{text}</p>
-                <span className="application-link">
-                  Konsultasi kemasan <ArrowUpRight size={18} />
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section id="cara-pesan" className="order-section">
-          <div className="container">
+        {applications.visible && (
+          <section className="section container applications">
             <div className="section-heading">
               <div>
-                <p className="eyebrow">04 / DARI KEBUTUHAN JADI PESANAN</p>
+                <p className="eyebrow">{applications.eyebrow}</p>
                 <h2>
-                  Pesan dengan mudah.
-                  <br />
-                  Kami bantu sampai pas.
+                  <Multiline text={applications.title} />
                 </h2>
               </div>
-              <p>
-                Komunikasi langsung, supaya kemasan yang Anda pesan benar-benar
-                sesuai kebutuhan.
-              </p>
+              <a className="text-link" href="#konsultasi">
+                {applications.linkLabel} <ArrowUpRight size={18} />
+              </a>
             </div>
-            <div className="steps">
-              {[
-                [
-                  "01",
-                  "Ceritakan kebutuhan",
-                  "Sampaikan jenis produk, ukuran kemasan, dan perkiraan jumlah pesanan.",
-                ],
-                [
-                  "02",
-                  "Dapatkan penawaran",
-                  "Kami bantu sesuaikan spesifikasi dan berikan penawaran untuk bisnis Anda.",
-                ],
-                [
-                  "03",
-                  "Konfirmasi & siapkan",
-                  "Sepakati detail pesanan dan pengiriman bersama tim kami melalui WhatsApp.",
-                ],
-              ].map(([number, title, desc]) => (
-                <article key={number}>
-                  <span className="step-number">{number}</span>
-                  <h3>{title}</h3>
-                  <p>{desc}</p>
-                </article>
+            <div className="application-grid">
+              {applications.cards.map((card, index) => (
+                <a
+                  className="application-card"
+                  href={whatsappHref(card.message)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={index}
+                >
+                  <div className="application-top">
+                    <LandingIcon name={card.icon} size={34} strokeWidth={1.2} />
+                    <span>{itemNumber(index)}</span>
+                  </div>
+                  <h3>{card.name}</h3>
+                  <p>
+                    <Multiline text={card.text} />
+                  </p>
+                  <span className="application-link">
+                    {applications.cardLinkLabel} <ArrowUpRight size={18} />
+                  </span>
+                </a>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section id="faq" className="section container faq-section">
-          <div>
-            <p className="eyebrow">05 / SEBELUM ANDA MEMESAN</p>
-            <h2>
-              Masih ada
-              <br />
-              pertanyaan?
-            </h2>
-            <p>
-              Kami siap membantu Anda
-              <br />
-              memilih kemasan yang tepat.
-            </p>
-            <a
-              className="text-link"
-              href={defaultWhatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Tanya langsung ke tim kami <ArrowUpRight size={18} />
-            </a>
-          </div>
-          <div className="faq-list">
-            {faqs.map(([question, answer]) => (
-              <details key={question}>
-                <summary>
-                  {question}
-                  <Plus size={20} />
-                </summary>
-                <p>{answer}</p>
-              </details>
-            ))}
-          </div>
-        </section>
+        {steps.visible && (
+          <section id="cara-pesan" className="order-section">
+            <div className="container">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">{steps.eyebrow}</p>
+                  <h2>
+                    <Multiline text={steps.title} />
+                  </h2>
+                </div>
+                <p>
+                  <Multiline text={steps.description} />
+                </p>
+              </div>
+              <div className="steps">
+                {steps.items.map((step, index) => (
+                  <article key={index}>
+                    <span className="step-number">{itemNumber(index)}</span>
+                    <h3>{step.title}</h3>
+                    <p>
+                      <Multiline text={step.text} />
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
-        <section id="konsultasi" className="contact-section">
-          <div className="container contact-grid">
-            <div className="contact-copy">
-              <p className="eyebrow">KEMASAN TEPAT. BISNIS SIAP.</p>
+        {faq.visible && (
+          <section id="faq" className="section container faq-section">
+            <div>
+              <p className="eyebrow">{faq.eyebrow}</p>
               <h2>
-                Mari kemas
-                <br />
-                hal baik
-                <br />
-                <span>berikutnya.</span>
+                <Multiline text={faq.title} />
               </h2>
               <p>
-                Mulai dengan cerita tentang produk Anda.
-                <br />
-                Biar kami bantu urusan kemasannya.
+                <Multiline text={faq.description} />
               </p>
               <a
-                className="contact-number"
+                className="text-link"
                 href={defaultWhatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <WhatsAppIcon size={23} />
-                {whatsapp.display}
+                {faq.linkLabel} <ArrowUpRight size={18} />
               </a>
             </div>
-            <QuoteForm phone={whatsapp.phone} />
-          </div>
-        </section>
+            <div className="faq-list">
+              {faq.items.map((item, index) => (
+                <details key={index}>
+                  <summary>
+                    {item.question}
+                    <Plus size={20} />
+                  </summary>
+                  <p>
+                    <Multiline text={item.answer} />
+                  </p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {contact.visible && (
+          <section id="konsultasi" className="contact-section">
+            <div className="container contact-grid">
+              <div className="contact-copy">
+                <p className="eyebrow">{contact.eyebrow}</p>
+                <h2>
+                  <Multiline text={contact.title} />
+                  {contact.highlight && (
+                    <>
+                      <br />
+                      <span>{contact.highlight}</span>
+                    </>
+                  )}
+                </h2>
+                <p>
+                  <Multiline text={contact.description} />
+                </p>
+                <a
+                  className="contact-number"
+                  href={defaultWhatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <WhatsAppIcon size={23} />
+                  {whatsapp.display}
+                </a>
+              </div>
+              <QuoteForm phone={whatsapp.phone} form={contact.form} />
+            </div>
+          </section>
+        )}
       </main>
     </>
   );
