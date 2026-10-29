@@ -40,7 +40,11 @@ Admin menyimpan produk, kategori, halaman, dan foto sebagai file di folder `DATA
 
 ## cPanel
 
-Di cPanel, buat aplikasi melalui **Setup Node.js App**, pilih versi Node.js yang didukung, atur **Application root** ke folder hasil ekstrak, dan isi **Application startup file** dengan `server.js`.
+Di cPanel, buat aplikasi melalui **Setup Node.js App**, pilih Node.js 24, atur **Application root** ke folder hasil ekstrak, dan isi **Application startup file** dengan `server.js`.
+
+Isi ZIP: `server.js` (launcher), `package.json` tanpa dependency, `README.txt`, dan folder `app/` berisi build standalone beserta `node_modules`-nya. CloudLinux menolak menyimpan pengaturan aplikasi (versi Node, environment variable) jika root aplikasi berisi folder `node_modules` asli, karena ia memasang symlink `node_modules` sendiri. Karena itu build diletakkan di `app/`.
+
+Saat deploy ulang: Stop aplikasi, kosongkan folder aplikasi (termasuk `node_modules` dan `.next` dari paket lama), ekstrak ZIP, lalu Start. `DATA_DIR` harus path absolut, karena folder kerja aplikasi adalah `app/`. File `.env` lokal tidak ikut ke dalam ZIP; isi semua variabel di panel.
 
 Beberapa provider shared hosting tidak mendukung aplikasi Node.js atau memerlukan konfigurasi Passenger tambahan. Pastikan paket layanan mendukung Node.js sebelum upload.
 

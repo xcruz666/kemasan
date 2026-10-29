@@ -158,24 +158,34 @@ await rm(stageDirectory, { recursive: true, force: true });
 await rm(archivePath, { force: true });
 await mkdir(stageDirectory, { recursive: true });
 
+/*
+ * CloudLinux Node.js Selector refuses to save any app setting (Node version,
+ * environment variables) while the application root holds a real node_modules
+ * folder: it wants to put its own symlink there. The standalone build lives in
+ * app/ and a small launcher in the root starts it.
+ */
+const appDirectory = path.join(stageDirectory, "app");
+
 await writeFile(
   path.join(stageDirectory, "README.txt"),
   [
     "OPTIMA KEMASAN PRIMA — NEXT.JS STANDALONE",
     "",
-    "1. Unggah dan ekstrak seluruh isi ZIP ini ke folder aplikasi Node.js Anda.",
-    "2. Atur startup file aplikasi menjadi: server.js",
-    "3. Gunakan Node.js 24 (minimal 20.9).",
-    "4. Mulai atau restart aplikasi dari panel shared hosting.",
+    "1. Stop aplikasi, lalu kosongkan folder aplikasi Node.js (hapus semua isinya,",
+    "   termasuk node_modules dan .next lama). Folder DATA_DIR tidak ikut dihapus.",
+    "2. Unggah dan ekstrak seluruh isi ZIP ini ke folder aplikasi tersebut.",
+    "3. Atur startup file aplikasi menjadi: server.js",
+    "4. Gunakan Node.js 24 (minimal 20.9), klik SAVE, lalu start aplikasi.",
     "",
-    "Folder ekstraksi harus berisi server.js, package.json, folder .next, dan folder public.",
-    "Jangan menghapus node_modules, .next, atau file server lainnya.",
-    "Jangan klik \"Run NPM Install\" di panel; dependensi sudah ada di dalam ZIP.",
+    "Folder aplikasi harus berisi server.js, package.json, README.txt, dan folder app.",
+    "Jangan membuat folder node_modules di folder aplikasi. CloudLinux membuat",
+    "symlink node_modules sendiri dan menolak menyimpan pengaturan jika ada folder asli.",
+    "Jangan klik \"Run NPM Install\" di panel; dependensi sudah ada di folder app.",
     "Alamat port disediakan oleh panel hosting melalui variabel PORT.",
     "",
     "Environment aplikasi yang wajib diisi:",
     "  SITE_URL             origin domain publik, contoh https://www.example.com",
-    "  DATA_DIR             folder data admin di LUAR folder aplikasi ini,",
+    "  DATA_DIR             path ABSOLUT folder data admin di LUAR folder aplikasi ini,",
     "                       contoh /home/<user>/optima-data",
     "  ADMIN_PASSWORD_HASH  hasil `npm run admin:hash-password` di komputer developer",
     "  SESSION_SECRET       string acak minimal 32 karakter",
@@ -183,24 +193,43 @@ await writeFile(
     "Produk, halaman, dan foto yang dibuat di /admin disimpan di DATA_DIR.",
     "Backup cukup dengan menyalin folder DATA_DIR. Deploy ZIP baru tidak menyentuhnya.",
     "",
-    "Untuk hosting berbasis cPanel Passenger, buat aplikasi melalui Setup Node.js App,",
-    "pilih versi Node.js 20.9 atau lebih baru, arahkan Application root ke folder ini,",
-    "dan tetapkan server.js sebagai Application startup file.",
-    "",
     "Informasi penerapan dapat berbeda antarpenyedia shared hosting.",
     "",
   ].join("\n"),
 );
 
-await mkdir(path.join(stageDirectory, ".next"), { recursive: true });
-await mkdir(path.join(stageDirectory, "public"), { recursive: true });
-await mkdir(path.join(stageDirectory, ".next", "static"), { recursive: true });
+await writeFile(
+  path.join(stageDirectory, "server.js"),
+  [
+    "// Starts the Next.js standalone server in ./app. See README.txt.",
+    'require("./app/server.js");',
+    "",
+  ].join("\n"),
+);
+
+// No dependencies here on purpose: "Run NPM Install" in the panel then installs nothing.
+await writeFile(
+  path.join(stageDirectory, "package.json"),
+  `${JSON.stringify(
+    {
+      name: "optima-kemasan-prima-launcher",
+      private: true,
+      main: "server.js",
+      engines: { node: ">=20.9" },
+    },
+    null,
+    2,
+  )}\n`,
+);
 
 const roots = [standalone, publicDirectory, staticDirectory];
-const targets = [stageDirectory, path.join(stageDirectory, "public"), path.join(stageDirectory, ".next", "static")];
+const targets = [appDirectory, path.join(appDirectory, "public"), path.join(appDirectory, ".next", "static")];
 for (let index = 0; index < roots.length; index += 1) {
   const files = await listFiles(roots[index]);
   for (const file of files) {
+    // Next.js copies the developer's .env files into standalone; they hold
+    // local secrets and would override nothing useful on the server.
+    if (index === 0 && /^\.env/.test(file.relativePath)) continue;
     const destination = path.join(targets[index], file.relativePath);
     await mkdir(path.dirname(destination), { recursive: true });
     const contents = await readFile(file.absolutePath);
@@ -209,6 +238,8 @@ for (let index = 0; index < roots.length; index += 1) {
 }
 
 const stagedFiles = await listFiles(stageDirectory);
+const leakedEnv = stagedFiles.find((file) => /(^|\/)\.env/.test(file.relativePath));
+if (leakedEnv) throw new Error(`Paket tidak boleh berisi file env: ${leakedEnv.relativePath}`);
 const archiveFiles = [];
 for (const file of stagedFiles) {
   const metadata = await lstat(file.absolutePath);
@@ -217,4 +248,4 @@ for (const file of stagedFiles) {
 
 await writeFile(archivePath, createZip(archiveFiles));
 console.log(`Paket siap diunggah: ${path.relative(root, archivePath)}`);
-console.log(`Isi arsip berada di root ZIP. Startup file: server.js. Node.js minimal: 20.9.`);
+console.log(`Root ZIP: server.js (launcher), package.json, README.txt, app/. Node.js minimal: 20.9.`);
