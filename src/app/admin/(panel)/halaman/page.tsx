@@ -3,6 +3,7 @@ import { Menu, Pencil, Plus } from "lucide-react";
 import { formatDateTime } from "@/components/admin/format-date";
 import { requireAdmin } from "@/lib/auth/admin";
 import { listPages } from "@/lib/content/pages";
+import { readSettings } from "@/lib/content/settings";
 
 async function load() {
   try {
@@ -13,9 +14,22 @@ async function load() {
   }
 }
 
+/** Page ids with a visible item in the header menu. Empty when settings cannot be read. */
+async function loadMenuPageIds(): Promise<Set<string>> {
+  try {
+    const { headerMenu } = await readSettings();
+    return new Set(
+      headerMenu.flatMap((item) => (item.kind === "page" && item.visible ? [item.pageId] : [])),
+    );
+  } catch (error) {
+    console.error("[admin] Gagal membaca menu header:", error);
+    return new Set();
+  }
+}
+
 export default async function AdminPagesPage() {
   await requireAdmin();
-  const pages = await load();
+  const [pages, menuPageIds] = await Promise.all([load(), loadMenuPageIds()]);
 
   return (
     <>
@@ -85,9 +99,9 @@ export default async function AdminPagesPage() {
                       >
                         {page.status === "published" ? "Terbit" : "Draf"}
                       </span>
-                      {page.showInMenu && (
+                      {menuPageIds.has(page.id) && (
                         <span className="admin-badge admin-badge-featured">
-                          <Menu size={12} aria-hidden="true" /> Menu #{page.menuOrder}
+                          <Menu size={12} aria-hidden="true" /> Di menu
                         </span>
                       )}
                     </span>

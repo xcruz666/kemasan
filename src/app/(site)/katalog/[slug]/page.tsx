@@ -10,6 +10,7 @@ import { ProductCard } from "@/components/product-card";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { brand, whatsappUrl } from "@/lib/brand";
 import { getCategoriesSafe } from "@/lib/content/categories";
+import { getSiteSettings } from "@/lib/content/settings";
 import { uploadUrl } from "@/lib/content/image-ref";
 import type { Product } from "@/lib/content/types";
 import {
@@ -55,9 +56,10 @@ export default async function ProductPage({ params }: Props) {
   const product = await loadProduct(slug);
   if (!product) notFound();
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, { whatsapp }] = await Promise.all([
     getPublishedProducts(),
     getCategoriesSafe(),
+    getSiteSettings(),
   ]);
   const category = categories.find((item) => item.id === product.categoryId);
   const related = product.categoryId
@@ -153,6 +155,7 @@ export default async function ProductPage({ params }: Props) {
             <a
               className="button product-cta"
               href={whatsappUrl(
+                whatsapp.phone,
                 `Halo ${brand.name}, saya tertarik dengan produk ${product.name}. Mohon informasi harga, minimum pemesanan, dan ketersediaannya.`,
               )}
               target="_blank"

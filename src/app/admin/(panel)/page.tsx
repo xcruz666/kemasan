@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Package, Plus, Tags } from "lucide-react";
+import { FileText, Package, Plus, Settings, Tags } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/admin";
 import { listCategories } from "@/lib/content/categories";
 import { checkDataDir } from "@/lib/content/data-dir";
@@ -113,6 +113,9 @@ export default async function AdminDashboardPage() {
           </Link>
           <Link className="admin-button admin-button-secondary" href="/admin/halaman">
             <FileText size={16} aria-hidden="true" /> Daftar halaman
+          </Link>
+          <Link className="admin-button admin-button-secondary" href="/admin/pengaturan">
+            <Settings size={16} aria-hidden="true" /> Pengaturan
           </Link>
         </div>
       </section>

@@ -72,7 +72,3 @@ export async function getPublishedPages(): Promise<Page[]> {
 export async function getPublishedPageBySlug(slug: string): Promise<Page | null> {
   return (await getPublishedPages()).find((page) => page.slug === slug) ?? null;
 }
-
-export async function getMenuPages(): Promise<Page[]> {
-  return (await getPublishedPages()).filter((page) => page.showInMenu);
-}

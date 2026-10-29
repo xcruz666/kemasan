@@ -1,6 +1,13 @@
 import { brand } from "@/lib/brand";
 
-export function StructuredData({ siteUrl }: { siteUrl: URL }) {
+export function StructuredData({
+  siteUrl,
+  telephone,
+}: {
+  siteUrl: URL;
+  /** +62… from admin settings. */
+  telephone: string;
+}) {
   const site = siteUrl.toString();
   const graph = {
     "@context": "https://schema.org",
@@ -11,10 +18,10 @@ export function StructuredData({ siteUrl }: { siteUrl: URL }) {
         name: brand.name,
         url: site,
         logo: `${site}images/optima-logo.svg`,
-        telephone: brand.phoneInternational,
+        telephone,
         contactPoint: {
           "@type": "ContactPoint",
-          telephone: brand.phoneInternational,
+          telephone,
           contactType: "sales",
           availableLanguage: "Indonesian",
           url: `${site}#konsultasi`,

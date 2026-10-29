@@ -83,8 +83,8 @@ Browser ──► LiteSpeed ──► Next.js (server.js)
 | `title` | string | ya | Menjadi H1 |
 | `body` | string (Markdown) | ya | |
 | `coverImage` | `{ file, alt, width, height }` \| null | tidak | |
-| `showInMenu` | boolean | ya | Tampil di menu header |
-| `menuOrder` | number | ya | |
+| `showInMenu` | boolean | ya | **Tidak dipakai lagi** sejak spec pengaturan menu (`2026-10-29-pengaturan-menu-whatsapp-design.md`). Hanya dibaca sekali untuk mengisi menu awal |
+| `menuOrder` | number | ya | **Tidak dipakai lagi**, urutan menu diatur di Pengaturan → Menu header |
 | `status` | `"draft"` \| `"published"` | ya | |
 | `seoTitle`, `seoDescription` | string | tidak | Fallback deskripsi: 160 karakter pertama teks `body` |
 | `createdAt`, `updatedAt` | string (ISO) | ya | |
@@ -155,7 +155,7 @@ Produk atau halaman berstatus draf, atau slug yang tidak ada, mengembalikan `not
 
 - **Header** (`src/components/header.tsx`):
   - Tautan anchor diubah dari `#produk` menjadi `/#produk`, supaya tetap berfungsi dari halaman lain.
-  - Ditambah tautan "Katalog" dan halaman dengan `showInMenu`. Daftar menu dikirim sebagai props dari server.
+  - Ditambah tautan "Katalog" dan halaman dengan `showInMenu`. Daftar menu dikirim sebagai props dari server. *(Diganti: isi menu kini diatur di Pengaturan → Menu header, lihat `2026-10-29-pengaturan-menu-whatsapp-design.md`.)*
   - Logo mengarah ke `/`.
 - **Footer:** dipindah dari `page.tsx` ke `src/components/footer.tsx` supaya dipakai di semua halaman publik. Isinya tidak berubah.
 - **Halaman utama:**

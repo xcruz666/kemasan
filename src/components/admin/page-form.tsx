@@ -19,8 +19,6 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
   const [slugEdited, setSlugEdited] = useState(Boolean(page));
   const [body, setBody] = useState(page?.body ?? "");
   const [coverImage, setCoverImage] = useState<ImageRef | null>(page?.coverImage ?? null);
-  const [showInMenu, setShowInMenu] = useState(page?.showInMenu ?? false);
-  const [menuOrder, setMenuOrder] = useState(String(page?.menuOrder ?? 0));
   const [status, setStatus] = useState<Status>(page?.status ?? "draft");
   const [seoTitle, setSeoTitle] = useState(page?.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(page?.seoDescription ?? "");
@@ -30,8 +28,9 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
     slug,
     body,
     coverImage,
-    showInMenu,
-    menuOrder: menuOrder.trim() === "" ? 0 : Number(menuOrder),
+    // The header menu is managed in Pengaturan; keep the stored values unchanged.
+    showInMenu: page?.showInMenu ?? false,
+    menuOrder: page?.menuOrder ?? 0,
     status,
     seoTitle,
     seoDescription,
@@ -121,14 +120,6 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
 
       <section className="admin-card admin-section">
         <h2 className="admin-section-title">Tampilan</h2>
-        <label className="admin-check">
-          <input
-            type="checkbox"
-            checked={showInMenu}
-            onChange={(event) => setShowInMenu(event.target.checked)}
-          />
-          <span>Tampil di menu header</span>
-        </label>
         <div className="admin-field-row">
           <div className="admin-field">
             <label className="admin-label" htmlFor="page-status">
@@ -146,23 +137,14 @@ export function PageForm({ page, notice }: { page?: Page; notice?: string }) {
             </select>
             <FieldError id="page-status-error" message={errors.status} />
           </div>
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="page-menu-order">
-              Urutan menu
-            </label>
-            <input
-              id="page-menu-order"
-              className="admin-input"
-              type="number"
-              step={1}
-              value={menuOrder}
-              onChange={(event) => setMenuOrder(event.target.value)}
-              aria-invalid={Boolean(errors.menuOrder)}
-              aria-describedby={describedBy("menuOrder")}
-            />
-            <FieldError id="page-menuOrder-error" message={errors.menuOrder} />
-          </div>
         </div>
+        <p className="admin-help">
+          Untuk menampilkan halaman ini di menu header, tambahkan lewat{" "}
+          <Link className="admin-link" href="/admin/pengaturan">
+            Pengaturan → Menu header
+          </Link>
+          .
+        </p>
       </section>
 
       <details

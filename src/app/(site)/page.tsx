@@ -21,6 +21,7 @@ import { QuoteForm } from "@/components/quote-form";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { brand, whatsappUrl } from "@/lib/brand";
 import { getFeaturedProducts } from "@/lib/content/products";
+import { getSiteSettings, toWhatsappContact } from "@/lib/content/settings";
 import { getSiteUrl } from "@/lib/site-url";
 import { StructuredData } from "@/app/structured-data";
 
@@ -77,11 +78,15 @@ const faqs = [
 
 export default async function Home() {
   const siteUrl = getSiteUrl();
-  const featured = await getFeaturedProducts(6);
+  const [featured, settings] = await Promise.all([getFeaturedProducts(6), getSiteSettings()]);
+  const whatsapp = toWhatsappContact(settings.whatsapp);
+  const defaultWhatsappHref = whatsappUrl(whatsapp.phone, whatsapp.defaultMessage);
 
   return (
     <>
-      {siteUrl && <StructuredData siteUrl={siteUrl} />}
+      {siteUrl && (
+        <StructuredData siteUrl={siteUrl} telephone={whatsapp.international} />
+      )}
       <main id="main">
         <section className="hero container" aria-labelledby="hero-title">
           <div className="hero-copy">
@@ -110,7 +115,7 @@ export default async function Home() {
             <div className="hero-actions">
               <a
                 className="button"
-                href={whatsappUrl()}
+                href={defaultWhatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -288,6 +293,7 @@ export default async function Home() {
               <a
                 className="text-link product-link"
                 href={whatsappUrl(
+                  whatsapp.phone,
                   `Halo ${brand.name}, saya ingin konsultasi ukuran dan ketebalan kantong vacuum yang cocok untuk produk dan mesin saya.`,
                 )}
                 target="_blank"
@@ -348,6 +354,7 @@ export default async function Home() {
               <a
                 className="application-card"
                 href={whatsappUrl(
+                  whatsapp.phone,
                   `Halo ${brand.name}, saya ingin konsultasi kantong vacuum untuk ${name.toLowerCase()}. Mohon rekomendasi ukuran dan penawaran harganya.`,
                 )}
                 target="_blank"
@@ -427,7 +434,7 @@ export default async function Home() {
             </p>
             <a
               className="text-link"
-              href={whatsappUrl()}
+              href={defaultWhatsappHref}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -465,15 +472,15 @@ export default async function Home() {
               </p>
               <a
                 className="contact-number"
-                href={whatsappUrl()}
+                href={defaultWhatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <WhatsAppIcon size={23} />
-                {brand.displayPhone}
+                {whatsapp.display}
               </a>
             </div>
-            <QuoteForm />
+            <QuoteForm phone={whatsapp.phone} />
           </div>
         </section>
       </main>

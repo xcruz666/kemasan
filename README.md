@@ -23,7 +23,7 @@ npm start
 - `src/app/(site)/page.tsx`: konten beranda, spesifikasi, FAQ, dan bagian pemasaran.
 - `src/app/(site)/layout.tsx`: header, footer, dan tombol WhatsApp untuk semua halaman publik.
 - `src/app/globals.css`: token warna, tata letak, dan tampilan mobile.
-- `src/lib/brand.ts`: nomor kontak dan pembentuk tautan WhatsApp.
+- `src/lib/brand.ts`: nama brand dan pembentuk tautan WhatsApp. Nomor WhatsApp diatur di `/admin/pengaturan` (nilai bawaan di `src/lib/content/settings-shared.ts`).
 - `src/components/quote-form.tsx`: pilihan produk, ukuran, dan jumlah yang dimasukkan ke pesan WhatsApp.
 
 Formulir hanya menyusun tautan WhatsApp. Data tidak disimpan atau dikirim ke server situs. Pesan baru terkirim setelah pengunjung mengirimkannya sendiri di WhatsApp.
@@ -49,7 +49,8 @@ Struktur mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/g
 
 - `/admin`: login satu password. Kelola produk, kategori, dan halaman. Editor punya mode visual dan Markdown.
 - `/katalog` dan `/katalog/<slug>`: katalog produk yang berstatus Terbit. Produk yang ditandai Unggulan juga tampil di beranda.
-- `/<slug>`: halaman tambahan, misalnya Tentang Kami. Bisa dimunculkan di menu header.
+- `/<slug>`: halaman tambahan, misalnya Tentang Kami. Tambahkan ke menu header lewat Pengaturan.
+- `/admin/pengaturan`: menu header (link bawaan bisa disembunyikan, link lain bisa ditambah) serta nomor WhatsApp dan pesan pembuka untuk semua tombol WhatsApp.
 - Data disimpan sebagai file JSON dan foto di folder `DATA_DIR` (lokal: `./data`, diabaikan git). Tidak ada database.
 - Untuk login lokal, isi `ADMIN_PASSWORD_HASH` (dari `npm run admin:hash-password`) dan `SESSION_SECRET` di `.env.local`.
 - Desain lengkap: `docs/superpowers/specs/2026-10-29-admin-katalog-halaman-design.md`. Panduan deploy: `README_SHARED_HOSTING.md`.

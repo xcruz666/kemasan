@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLink, FileText, LayoutDashboard, Package, Tags } from "lucide-react";
+import { ExternalLink, FileText, LayoutDashboard, Package, Settings, Tags } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Ringkasan", icon: LayoutDashboard },
   { href: "/admin/produk", label: "Produk", icon: Package },
   { href: "/admin/kategori", label: "Kategori", icon: Tags },
   { href: "/admin/halaman", label: "Halaman", icon: FileText },
+  { href: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 
 export function AdminNav() {

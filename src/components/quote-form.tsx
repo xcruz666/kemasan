@@ -4,7 +4,7 @@ import { useState } from "react";
 import { brand, whatsappUrl } from "@/lib/brand";
 import { WhatsAppIcon } from "./whatsapp-icon";
 
-export function QuoteForm() {
+export function QuoteForm({ phone }: { phone: string }) {
   const [product, setProduct] = useState("Daging & unggas");
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -58,7 +58,7 @@ export function QuoteForm() {
       </p>
       <a
         className="button quote-submit"
-        href={whatsappUrl(message)}
+        href={whatsappUrl(phone, message)}
         target="_blank"
         rel="noopener noreferrer"
       >

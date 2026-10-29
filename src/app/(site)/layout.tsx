@@ -1,29 +1,20 @@
 import { ArrowUpRight } from "lucide-react";
 import { Footer } from "@/components/footer";
-import { Header, type NavLink } from "@/components/header";
+import { Header } from "@/components/header";
 import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { whatsappUrl } from "@/lib/brand";
-import { getMenuPages } from "@/lib/content/pages";
+import { getPublishedPages } from "@/lib/content/pages";
+import { getSiteSettings, resolveHeaderMenu } from "@/lib/content/settings";
 import "./site.css";
 
 export const dynamic = "force-dynamic";
 
-const baseLinks: NavLink[] = [
-  { label: "Produk", href: "/#produk" },
-  { label: "Katalog", href: "/katalog" },
-  { label: "Keunggulan", href: "/#keunggulan" },
-  { label: "Cara pesan", href: "/#cara-pesan" },
-  { label: "FAQ", href: "/#faq" },
-];
-
 export default async function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const menuPages = await getMenuPages();
-  const links: NavLink[] = [
-    ...baseLinks,
-    ...menuPages.map((page) => ({ label: page.title, href: `/${page.slug}` })),
-  ];
+  const [settings, pages] = await Promise.all([getSiteSettings(), getPublishedPages()]);
+  const links = resolveHeaderMenu(settings.headerMenu, pages);
+  const whatsappHref = whatsappUrl(settings.whatsapp.phone, settings.whatsapp.defaultMessage);
 
   return (
     <>
@@ -36,12 +27,12 @@ export default async function SiteLayout({
           Terbuka untuk pemesanan grosir <ArrowUpRight size={14} />
         </a>
       </div>
-      <Header links={links} />
+      <Header links={links} whatsappHref={whatsappHref} />
       {children}
       <Footer />
       <a
         className="floating-wa"
-        href={whatsappUrl()}
+        href={whatsappHref}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Konsultasi melalui WhatsApp"
