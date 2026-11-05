@@ -9,3 +9,9 @@ test-results/
 
 # admin content (local dev)
 /data/
+
+# build output (npm run package:shared-hosting)
+/dist/
+
+# local admin content when DATA_DIR points here
+/optima-data/
