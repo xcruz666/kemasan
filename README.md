@@ -45,6 +45,14 @@ npm run build
 
 Struktur mengikuti [dokumentasi instalasi Next.js](https://nextjs.org/docs/app/getting-started/installation).
 
+## ZIP kode sumber
+
+```sh
+npm run zip:source
+```
+
+Hasilnya `dist/optima-kemasan-prima-source.zip`, berisi folder `optima-kemasan-prima/`. Tidak ikut: `node_modules`, `.next`, `.git`, `dist`, `optima-data`, `data`, dan semua file `.env`. `.env.example` diambil dari versi commit, jadi isian lokal tidak ikut.
+
 ## Admin, katalog, dan halaman
 
 - `/admin`: login satu password. Kelola produk, kategori, dan halaman. Editor punya mode visual dan Markdown.

@@ -7,6 +7,7 @@
     "build": "next build",
     "package:shared-hosting": "npm run build && node scripts/package-shared-hosting.mjs",
     "start": "next start --hostname 0.0.0.0",
+    "zip:source": "node scripts/zip-source.mjs",
     "typecheck": "tsc --noEmit",
     "admin:hash-password": "tsx scripts/hash-password.ts"
   },
